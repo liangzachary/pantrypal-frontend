@@ -57,7 +57,7 @@ export default function AddToHomeScreenPrompt() {
         alignItems: "center",
         padding: "14px 0"
       }}>
-        <span style={{fontWeight:600, fontSize:"1.12rem", color:"#c47000"}}>Add PantryPal to your home screen?</span>
+        <span style={{fontWeight:600, fontSize:"1.12rem", color:"#c47000"}}>Add Spatch to your home screen?</span>
         <button
           style={{
             background: "#FFD700",
