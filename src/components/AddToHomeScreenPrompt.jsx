@@ -122,7 +122,7 @@ export default function AddToHomeScreenPrompt() {
         </span>
         <span style={{fontSize: "1.04rem", color: "#444", fontWeight: 500}}>
           Tap <span style={{display:"inline-block",verticalAlign:"middle"}}>
-            <img src="https://upload.wikimedia.org/wikipedia/commons/2/2d/IOS_Safari_Share_icon.png" alt="Share" style={{height:"1.4em",marginBottom:"-0.2em"}}/>
+            <img src="/assets/share.png" alt="Share" style={{height:"1.4em",marginBottom:"-0.2em"}}/>
           </span> then “Add to Home Screen”
         </span>
         <button
