@@ -9,10 +9,16 @@
 //   );
 // }
 
+import AddToHomeScreenPrompt from "./components/AddToHomeScreenPrompt";
 import BreakfastRoute from "./components/BreakfastRoute";
 
 function App() {
-  return <BreakfastRoute />;
+  return (
+    <>
+      <AddToHomeScreenPrompt />
+      <BreakfastRoute />
+    </>
+  );
 }
 
 export default App;
