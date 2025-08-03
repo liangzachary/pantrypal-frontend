@@ -122,7 +122,7 @@ export default function AddToHomeScreenPrompt() {
         </span>
         <span style={{fontSize: "1.04rem", color: "#444", fontWeight: 500}}>
           Tap <span style={{display:"inline-block",verticalAlign:"middle"}}>
-            <img src="/assets/share.png" alt="Share" style={{height:"1.4em",marginBottom:"-0.2em"}}/>
+            <img src="/assets/share.png" alt="Share" className="inline w-5 h-5 mx-1 align-middle" />
           </span> then “Add to Home Screen”
         </span>
         <button
