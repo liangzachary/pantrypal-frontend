@@ -118,7 +118,7 @@ export default function AddToHomeScreenPrompt() {
         padding: "15px 0"
       }}>
         <span style={{fontWeight:600, fontSize:"1.10rem", color:"#c47000", marginBottom: 5}}>
-          Add PantryPal to your home screen:
+          Add Spatch to your home screen:
         </span>
         <span style={{fontSize: "1.04rem", color: "#444", fontWeight: 500}}>
           Tap <span style={{display:"inline-block",verticalAlign:"middle"}}>
