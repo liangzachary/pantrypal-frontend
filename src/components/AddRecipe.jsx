@@ -87,7 +87,7 @@ export default function AddRecipe({ onCreated }) {
       difficulty,
       ingredients: filteredIngredients,
       kitchenware: filteredKitchenware,
-      instructions: filteredSteps, // <--- ADD THIS!
+      steps: filteredSteps, // <--- ADD THIS!
     };
     try {
       const res = await fetch("https://spatch.onrender.com/recipes/", {
