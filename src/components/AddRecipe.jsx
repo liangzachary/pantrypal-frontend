@@ -94,7 +94,7 @@ export default function AddRecipe({ onCreated }) {
       <input required value={imgUrl} onChange={e => setImgUrl(e.target.value)} placeholder="Image URL" className="p-2 border rounded" />
       {/* Main fields */}
       <input required value={nickname} onChange={e => setNickname(e.target.value)} placeholder="Recipe nickname" className="p-2 border rounded" />
-      <input required value={realName} onChange={e => setRealName(e.target.value)} placeholder="Your real name" className="p-2 border rounded" />
+      <input required value={realName} onChange={e => setRealName(e.target.value)} placeholder="Recipe real name" className="p-2 border rounded" />
       <input required type="number" min={1} value={time} onChange={e => setTime(e.target.value)} placeholder="Time (mins)" className="p-2 border rounded" />
       {/* Servings */}
       <div className="flex items-center gap-2">
