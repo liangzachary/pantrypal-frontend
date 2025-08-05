@@ -1,48 +1,24 @@
 import React, { useState } from "react";
-import BreakfastRoute from "./components/BreakfastRoute";
-import AdminPage from "./components/AdminPage";
-import AddRecipe from "./components/AddRecipe";
-// ...
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import BreakfastRoute from "./components/BreakfastRoute";
 import RecipeDetail from "./components/RecipeDetail";
-import RecipeAdmin from "./components/RecipeAdmin"; // New!
+import AdminPage from "./components/AdminPage";
+import AddRecipe from "./components/AddRecipe";
+// import RecipeAdmin from "./components/RecipeAdmin"; // remove if unused
 
-function App() {
+export default function App() {
+  // GLOBAL admin state for the app!
+  const [isAdmin, setIsAdmin] = useState(false);
+
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<BreakfastRoute />} />
-        <Route path="/recipe/:id" element={<RecipeDetail />} />
-        <Route path="/admin" element={<RecipeAdmin />} />
+        <Route path="/" element={<BreakfastRoute isAdmin={isAdmin} setIsAdmin={setIsAdmin} />} />
+        <Route path="/recipe/:id" element={<RecipeDetail isAdmin={isAdmin} />} />
+        <Route path="/admin" element={<AdminPage isAdmin={isAdmin} setIsAdmin={setIsAdmin} />} />
+        {/* You can pass isAdmin to AddRecipe if you use it as a route */}
+        {/* <Route path="/add-recipe" element={<AddRecipe isAdmin={isAdmin} />} /> */}
       </Routes>
     </BrowserRouter>
-  );
-}
-
-export default App;
-
-function App() {
-  return (
-    <div>
-      <AddRecipe />
-      {/* ...your other UI */}
-    </div>
-  );
-}
-
-export default function App() {
-  const [admin, setAdmin] = useState(false);
-
-  return (
-    <div>
-      <button
-        className="fixed top-3 right-3 bg-teal-700 text-white px-2 py-1 rounded"
-        onClick={() => setAdmin(a => !a)}
-      >
-        {admin ? "User View" : "Admin"}
-      </button>
-      {admin ? <AdminPage /> : <BreakfastRoute />}
-    </div>
   );
 }

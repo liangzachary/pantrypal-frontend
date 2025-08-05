@@ -3,7 +3,7 @@ import RecipeNode from "./RecipeNode";
 import RecipeInfoCallout from "./RecipeInfoCallout";
 import BottomNav from "./BottomNav";
 
-export default function MealWorld({ meal = "breakfast" }) {
+export default function MealWorld({ meal = "breakfast", isAdmin }) {
   const [recipes, setRecipes] = useState([]);
   const [selected, setSelected] = useState(null);
 
