@@ -26,7 +26,7 @@ export default function BreakfastRoute({ isAdmin }) {
   ];
 
   useEffect(() => {
-    fetch("http://localhost:8000/recipes/")
+    fetch("https://spatch.onrender.com/recipes/")
       .then(res => res.json())
       .then(data => setRecipes(data));
   }, []);
