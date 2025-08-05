@@ -11,6 +11,7 @@ export default function AddRecipe({ onCreated }) {
   const [difficulty, setDifficulty] = useState(1);
   const [ingredients, setIngredients] = useState([""]);
   const [kitchenware, setKitchenware] = useState([""]);
+  const [steps, setSteps] = useState([""]); // <--- NEW
   const [password, setPassword] = useState("");
   const [msg, setMsg] = useState("");
 
@@ -35,6 +36,17 @@ export default function AddRecipe({ onCreated }) {
   const addKitchenware = () => setKitchenware(prev => [...prev, ""]);
   const removeKitchenware = i => setKitchenware(prev => prev.length > 1 ? prev.filter((_, idx) => idx !== i) : prev);
 
+  // === STEPS HANDLERS ===
+  const handleStepChange = (i, value) => {
+    setSteps(prev => {
+      const copy = [...prev];
+      copy[i] = value;
+      return copy;
+    });
+  };
+  const addStep = () => setSteps(prev => [...prev, ""]);
+  const removeStep = i => setSteps(prev => prev.length > 1 ? prev.filter((_, idx) => idx !== i) : prev);
+
   const incrementServings = () => setServings(s => s + 1);
   const decrementServings = () => setServings(s => Math.max(1, s - 1));
 
@@ -52,7 +64,8 @@ export default function AddRecipe({ onCreated }) {
     // Clean up fields
     const filteredIngredients = ingredients.map(i => i.trim()).filter(i => i);
     const filteredKitchenware = kitchenware.map(i => i.trim()).filter(i => i);
-    if (!nickname || !realName || !time || !imgUrl || filteredIngredients.length === 0 || filteredKitchenware.length === 0) {
+    const filteredSteps = steps.map(s => s.trim()).filter(s => s);
+    if (!nickname || !realName || !time || !imgUrl || filteredIngredients.length === 0 || filteredKitchenware.length === 0 || filteredSteps.length === 0) {
       setMsg("Please fill all required fields.");
       return;
     }
@@ -66,6 +79,7 @@ export default function AddRecipe({ onCreated }) {
       difficulty,
       ingredients: filteredIngredients,
       kitchenware: filteredKitchenware,
+      instructions: filteredSteps, // <--- ADD THIS!
     };
     try {
       const res = await fetch("http://localhost:8000/recipes/", {
@@ -79,7 +93,7 @@ export default function AddRecipe({ onCreated }) {
       if (!res.ok) throw new Error(await res.text());
       setMsg("Recipe added!");
       setId(""); setImgUrl(""); setNickname(""); setRealName(""); setTime(""); setServings(1);
-      setDifficulty(1); setIngredients([""]); setKitchenware([""]); setPassword("");
+      setDifficulty(1); setIngredients([""]); setKitchenware([""]); setSteps([""]); setPassword("");
       onCreated && onCreated();
     } catch (err) {
       setMsg("Error: " + err.message);
@@ -161,6 +175,26 @@ export default function AddRecipe({ onCreated }) {
           </div>
         ))}
         <button type="button" onClick={addKitchenware} className="text-xs underline text-blue-600 self-start mt-1">Add Kitchenware</button>
+      </div>
+      {/* Steps / Instructions */}
+      <div className="flex flex-col gap-1">
+        <span className="font-bold">Instructions / Steps:</span>
+        {steps.map((step, i) => (
+          <div className="flex items-center gap-1 mb-1" key={i}>
+            <span className="font-bold">{i + 1}.</span>
+            <input
+              required
+              value={step}
+              onChange={e => handleStepChange(i, e.target.value)}
+              className="p-2 border rounded flex-1"
+              placeholder={`Step #${i+1}`}
+            />
+            {steps.length > 1 && (
+              <button type="button" onClick={() => removeStep(i)} className="text-red-500 font-bold text-lg px-2">×</button>
+            )}
+          </div>
+        ))}
+        <button type="button" onClick={addStep} className="text-xs underline text-blue-600 self-start mt-1">Add Step</button>
       </div>
       {/* Admin password (submission required) */}
       <input
