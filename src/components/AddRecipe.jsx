@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 export default function AddRecipe({ onCreated }) {
   // New fields!
@@ -55,6 +55,14 @@ export default function AddRecipe({ onCreated }) {
     setDifficulty(Math.min(3, Math.max(1, v)));
   };
 
+  // Success message fadeout effect
+  useEffect(() => {
+    if (msg === "Recipe added!") {
+      const timeout = setTimeout(() => setMsg(""), 2000);
+      return () => clearTimeout(timeout);
+    }
+  }, [msg]);
+
   async function handleSubmit(e) {
     e.preventDefault();
     if (!password) {
@@ -82,7 +90,7 @@ export default function AddRecipe({ onCreated }) {
       instructions: filteredSteps, // <--- ADD THIS!
     };
     try {
-      const res = await fetch("http://localhost:8000/recipes/", {
+      const res = await fetch("https://spatch.onrender.com/recipes/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -209,7 +217,18 @@ export default function AddRecipe({ onCreated }) {
       <button type="submit" className="bg-amber-400 hover:bg-amber-500 text-black py-2 rounded font-bold mt-2">
         Add Recipe
       </button>
-      {msg && <div className="text-center text-sm mt-2">{msg}</div>}
+      {/* Success/Error Message */}
+      {msg && (
+        <div
+          className={
+            msg === "Recipe added!"
+              ? "bg-green-100 text-green-800 font-semibold px-4 py-2 mt-3 mb-1 rounded text-center shadow"
+              : "bg-red-100 text-red-800 font-semibold px-4 py-2 mt-3 mb-1 rounded text-center shadow"
+          }
+        >
+          {msg}
+        </div>
+      )}
     </form>
   );
 }
