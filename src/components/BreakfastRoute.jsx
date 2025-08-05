@@ -33,7 +33,7 @@ export default function BreakfastRoute({ isAdmin, setIsAdmin }) {
       {/* Orange admin login button, centered at bottom */}
       {!isAdmin && (
         <button
-          className="fixed left-1/2 bottom-16 z-50 -translate-x-1/2 bg-orange-500 hover:bg-orange-600 text-white shadow-lg border-2 border-orange-700 rounded-full w-16 h-16 flex items-center justify-center text-3xl font-bold transition"
+          className="fixed left-1/2 top-1/2 -translate-y-1/2 z-50 -translate-x-1/2 bg-orange-500 hover:bg-orange-600 text-white shadow-lg border-2 border-orange-700 rounded-full w-16 h-16 flex items-center justify-center text-3xl font-bold transition"
           style={{ boxShadow: "0 4px 16px #f5822077" }}
           onClick={() => setShowAdminModal(true)}
           title="Admin Login"
