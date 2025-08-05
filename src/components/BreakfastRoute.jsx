@@ -1,21 +1,94 @@
 import React, { useEffect, useState } from "react";
 import Header from "./Header";
-import { Link } from "react-router-dom";
 
 export default function BreakfastRoute({ isAdmin, setIsAdmin }) {
   const [atBottom, setAtBottom] = useState(false);
+  const [selectedRecipe, setSelectedRecipe] = useState(null);
   const [tooltipIdx, setTooltipIdx] = useState(null);
   const [mouse, setMouse] = useState({ x: 0, y: 0 });
   const [showAdminModal, setShowAdminModal] = useState(false);
   const [adminInput, setAdminInput] = useState("");
   const [adminError, setAdminError] = useState("");
 
-  // ...your unlocked logic, etc.
+  // Only breakfast1 is unlocked (unless admin)
+  const [unlocked] = useState([1]);
 
-  // Admin login modal logic
+  const handleFoodClick = (foodType) => {
+    console.log(`Clicked on ${foodType}`);
+  };
+
+  useEffect(() => {
+    function onScroll() {
+      const scrollPos = window.innerHeight + window.scrollY;
+      const bottom = document.body.offsetHeight - 60;
+      setAtBottom(scrollPos >= bottom);
+    }
+    window.addEventListener("scroll", onScroll);
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  useEffect(() => {
+    function onClickOutside(e) {
+      if (
+        tooltipIdx !== null &&
+        !e.target.classList.contains("locked-food-img")
+      ) {
+        setTooltipIdx(null);
+      }
+    }
+    if (tooltipIdx !== null) {
+      window.addEventListener("mousedown", onClickOutside);
+    }
+    return () => window.removeEventListener("mousedown", onClickOutside);
+  }, [tooltipIdx]);
+
+  const lockedStyle = {
+    imageRendering: "pixelated",
+    filter: "blur(6px)",
+    pointerEvents: "auto",
+  };
+
+  const foodImages = [
+    { src: "/assets/food/breakfast1.png", style: { top: '90%', left: '26%', width: 160, height: 160 } },
+    { src: "/assets/food/breakfast2.png", style: { top: '84%', left: '75%', width: 120, height: 120 } },
+    { src: "/assets/food/breakfast3.png", style: { top: '70%', left: '25%', width: 130, height: 130 } },
+    { src: "/assets/food/breakfast4.png", style: { top: '63%', left: '80%', width: 140, height: 140 } },
+    { src: "/assets/food/breakfast5.png", style: { top: '55%', left: '20%', width: 120, height: 120 } },
+    { src: "/assets/food/breakfast6.png", style: { top: '44%', left: '80%', width: 120, height: 120 } },
+    { src: "/assets/food/breakfast7.png", style: { top: '34%', left: '40%', width: 130, height: 130 } },
+    { src: "/assets/food/breakfast8.png", style: { top: '24%', left: '70%', width: 135, height: 135 } },
+    { src: "/assets/food/breakfast9.png", style: { top: '13.5%', left: '35%', width: 130, height: 130 } },
+    { src: "/assets/food/breakfast10.png", style: { top: '2.5%', left: '70%', width: 160, height: 160 } },
+  ];
+
+  const renderTooltip = (recipeNum) => {
+    if (tooltipIdx !== recipeNum) return null;
+    return (
+      <div
+        className="pointer-events-none z-[99] fixed transition-all duration-75 text-base"
+        style={{
+          left: mouse.x,
+          top: mouse.y - 38,
+          transform: "translate(-50%,-100%)",
+          background: "#111",
+          color: "#fff",
+          borderRadius: 8,
+          padding: "7px 18px",
+          fontWeight: 600,
+          boxShadow: "0 4px 16px 0 #111b",
+          whiteSpace: "nowrap",
+          fontSize: "1rem",
+        }}
+      >
+        You haven't unlocked this recipe yet
+      </div>
+    );
+  };
+
+  // --- Admin modal handlers ---
   function handleAdminLogin() {
     setAdminError("");
-    if (adminInput === "spatchSecret123") { // Change to your real secret!
+    if (adminInput === "spatchSecret123") {
       setIsAdmin(true);
       setShowAdminModal(false);
       setAdminInput("");
@@ -24,31 +97,24 @@ export default function BreakfastRoute({ isAdmin, setIsAdmin }) {
     }
   }
 
-  // ... your other hooks, tooltip logic, and food images here
-
   return (
     <div className="mx-auto w-full bg-stone-200 max-w-[480px] min-h-screen flex flex-col relative">
-      {/* ... header and main content ... */}
-
-      {/* Orange admin login button, centered at bottom */}
+      {/* Admin button or badge - centered, orange, never hides main UI */}
       {!isAdmin && (
         <button
-          className="fixed left-1/2 z-50 -translate-x-1/2 -translate-y-1/2 bg-orange-500 ..."
-          style={{ top: "60%" }}
+          className="fixed left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 bg-orange-500 hover:bg-orange-600 text-white shadow-lg border-2 border-orange-700 rounded-full w-16 h-16 flex items-center justify-center text-3xl font-bold transition"
+          style={{ boxShadow: "0 4px 16px #f5822077" }}
           onClick={() => setShowAdminModal(true)}
           title="Admin Login"
         >
           <span role="img" aria-label="lock">🔒</span>
         </button>
       )}
-      {/* If admin, show a badge instead */}
       {isAdmin && (
-        <div className="fixed left-1/2 bottom-16 z-50 -translate-x-1/2 bg-lime-400 rounded-full w-16 h-16 flex items-center justify-center text-3xl font-bold border-2 border-lime-700 shadow-lg">
+        <div className="fixed left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 bg-lime-400 rounded-full w-16 h-16 flex items-center justify-center text-3xl font-bold border-2 border-lime-700 shadow-lg">
           <span role="img" aria-label="admin">🛠️</span>
         </div>
       )}
-
-      {/* Admin login modal */}
       {showAdminModal && (
         <div className="fixed inset-0 bg-black/50 z-[999] flex items-center justify-center">
           <div className="bg-white rounded-lg p-6 flex flex-col gap-3 shadow-xl min-w-[260px]">
@@ -78,7 +144,177 @@ export default function BreakfastRoute({ isAdmin, setIsAdmin }) {
         </div>
       )}
 
-      {/* ...rest of your route map, images, tooltip, and nav... */}
+      {/* Header area with 2 bars */}
+      <div className="w-full flex flex-col sticky top-0 z-50">
+        <div className="w-full z-10 bg-white">
+          <Header
+            level={30}
+            starsNeeded="0/50 stars needed"
+            currency={300}
+            stars={1604}
+          />
+        </div>
+        <div className="w-full flex items-center justify-center bg-teal-400 py-3 border-b-2 border-stone-300 z-10">
+          <span
+            className="text-2xl sm:text-3xl text-amber-100 tracking-widest font-bold"
+            style={{ fontFamily: 'ComicCAT, sans-serif' }}
+          >
+            BREAKFAST ROUTE
+          </span>
+        </div>
+      </div>
+
+      {/* Main content area */}
+      <div className="relative flex-1 flex flex-col items-center w-full">
+        {/* Route map */}
+        <img
+          src="/assets/draft-justtrack.png"
+          className="w-full h-auto border-2 border-stone-400 block -mt-3"
+          alt="Breakfast route map"
+        />
+
+        {/* Food images */}
+        {foodImages.map((img, i) => {
+          const recipeNum = i + 1;
+          // UNLOCK ALL IF ADMIN:
+          const isUnlocked = isAdmin || unlocked.includes(recipeNum);
+
+          return (
+            <React.Fragment key={img.src}>
+              <img
+                src={img.src}
+                alt={`Food ${recipeNum}`}
+                className={
+                  "absolute -translate-x-1/2 transition-transform duration-200 ease-in-out cursor-pointer" +
+                  (isUnlocked ? " hover:scale-110 active:scale-95" : " opacity-80 locked-food-img")
+                }
+                style={{
+                  ...img.style,
+                  ...(isUnlocked ? {} : lockedStyle),
+                }}
+                onMouseEnter={e => {
+                  if (!isUnlocked) {
+                    setTooltipIdx(recipeNum);
+                    setMouse({ x: e.clientX, y: e.clientY });
+                  }
+                }}
+                onMouseMove={e => {
+                  if (!isUnlocked && tooltipIdx === recipeNum) {
+                    setMouse({ x: e.clientX, y: e.clientY });
+                  }
+                }}
+                onMouseLeave={() => {
+                  if (!isUnlocked) setTooltipIdx(null);
+                }}
+                onClick={e => {
+                  if (isUnlocked) {
+                    setSelectedRecipe(recipeNum);
+                  } else {
+                    // Prevent tooltip from closing if clicking locked food
+                    e.stopPropagation();
+                    setTooltipIdx(recipeNum);
+                  }
+                }}
+                draggable={false}
+                {...(!isUnlocked ? { "data-locked": "true", className: "absolute -translate-x-1/2 transition-transform duration-200 ease-in-out cursor-pointer opacity-85 locked-food-img" } : {})}
+              />
+              {!isUnlocked && renderTooltip(recipeNum)}
+            </React.Fragment>
+          );
+        })}
+
+        {/* Modal/overlay for selected recipe */}
+        {selectedRecipe && (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center"
+            onClick={() => setSelectedRecipe(null)}
+            style={{ background: "rgba(0,0,0,0.18)" }}
+          >
+            <div
+              className="bg-gray-200 rounded-xl shadow-lg p-5 min-w-[280px] max-w-xs relative flex flex-col"
+              onClick={e => e.stopPropagation()}
+            >
+              {/* Close button */}
+              <button
+                onClick={() => setSelectedRecipe(null)}
+                className="absolute top-3 right-3 text-2xl font-bold text-black/60 hover:text-black"
+                aria-label="Close"
+              >
+                &times;
+              </button>
+              {/* Title */}
+              <div className="text-2xl font-bold text-center mb-0">Crimson Sunset</div>
+              <div className="text-md text-center mb-3 text-gray-700 -mt-1">
+                Chilli oil fried egg
+              </div>
+              {/* Stars */}
+              <div className="flex items-center justify-center mb-1">
+                <img src="/assets/star_filled.png" alt="star" className="w-9 h-9" />
+                <img src="/assets/star_outline.png" alt="star" className="w-8 h-8" />
+                <img src="/assets/star_outline.png" alt="star" className="w-8 h-8" />
+              </div>
+              <div className="text-center mb-3 text-gray-700">Beginner</div>
+              {/* Ingredients */}
+              <div className="font-bold mb-0 mt-2">Ingredients:</div>
+              <ul className="mb-4 pl-4 text-left text-[16px]">
+                <li>&#8226; x1 Egg</li>
+                <li>&#8226; Chilli oil</li>
+              </ul>
+              {/* Buttons */}
+              <button
+                className="w-full rounded bg-lime-400 hover:bg-lime-500 text-black text-[17px] font-semibold py-2 mb-2 transition"
+                onClick={() => window.open('https://www.amazon.com/s?k=egg,chilli+oil', '_blank')}
+              >
+                Buy on Amazon Fresh
+              </button>
+              <button
+                className="w-full rounded bg-orange-400 hover:bg-orange-500 text-black text-[17px] font-semibold py-2"
+                onClick={() => alert('Start cooking!')}
+              >
+                Start cooking!
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Spacer (h-20 kept as requested) */}
+      <div className="h-20"></div>
+
+      {/* Bottom nav */}
+      <div
+        className={`fixed z-40 left-1/2 -translate-x-1/2 max-w-[480px] w-[95vw] transition-all duration-300 ease-in-out ${
+          atBottom ? "bottom-0 rounded-none" : "bottom-3 rounded-2xl"
+        }`}
+      >
+        <div
+          className={
+            "w-full flex justify-around items-center bg-amber-300 border-2 border-orange-400 shadow-lg transition-all duration-300 ease-in-out " +
+            (atBottom
+              ? "rounded-none py-7 px-0"
+              : "rounded-2xl py-4 px-6")
+          }
+        >
+          <img
+            src="/assets/home.png"
+            alt="Home"
+            onClick={() => handleFoodClick("home")}
+            className="aspect-[0.97] w-[24px] sm:w-[31px] cursor-pointer hover:scale-110 active:scale-95 transition-transform duration-200"
+          />
+          <img
+            src="/assets/profile.png"
+            alt="Profile"
+            onClick={() => handleFoodClick("profile")}
+            className="w-8 sm:w-10 aspect-square cursor-pointer hover:scale-110 active:scale-95 transition-transform duration-200"
+          />
+          <img
+            src="/assets/leaderboard.png"
+            alt="Leaderboard"
+            onClick={() => handleFoodClick("leaderboard")}
+            className="aspect-[0.97] w-[26px] sm:w-[33px] cursor-pointer hover:scale-110 active:scale-95 transition-transform duration-200"
+          />
+        </div>
+      </div>
     </div>
   );
 }
