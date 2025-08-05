@@ -3,16 +3,33 @@ import Header from "./Header";
 
 export default function BreakfastRoute({ isAdmin }) {
   const [atBottom, setAtBottom] = useState(false);
-  const [selectedRecipe, setSelectedRecipe] = useState(null);
   const [tooltipIdx, setTooltipIdx] = useState(null);
   const [mouse, setMouse] = useState({ x: 0, y: 0 });
+  const [recipes, setRecipes] = useState([]);
+  const [selectedRecipe, setSelectedRecipe] = useState(null);
 
   // Only breakfast1 is unlocked (unless admin)
   const [unlocked] = useState([1]);
 
-  const handleFoodClick = (foodType) => {
-    console.log(`Clicked on ${foodType}`);
-  };
+  // --- Link food images to recipe IDs in the backend ---
+  const foodImages = [
+    { src: "/assets/food/breakfast1.png", style: { top: '90%', left: '26%', width: 160, height: 160 }, recipeId: 1 },
+    { src: "/assets/food/breakfast2.png", style: { top: '84%', left: '75%', width: 120, height: 120 }, recipeId: 2 },
+    { src: "/assets/food/breakfast3.png", style: { top: '70%', left: '25%', width: 130, height: 130 }, recipeId: 3 },
+    { src: "/assets/food/breakfast4.png", style: { top: '63%', left: '80%', width: 140, height: 140 }, recipeId: 4 },
+    { src: "/assets/food/breakfast5.png", style: { top: '55%', left: '20%', width: 120, height: 120 }, recipeId: 5 },
+    { src: "/assets/food/breakfast6.png", style: { top: '44%', left: '80%', width: 120, height: 120 }, recipeId: 6 },
+    { src: "/assets/food/breakfast7.png", style: { top: '34%', left: '40%', width: 130, height: 130 }, recipeId: 7 },
+    { src: "/assets/food/breakfast8.png", style: { top: '24%', left: '70%', width: 135, height: 135 }, recipeId: 8 },
+    { src: "/assets/food/breakfast9.png", style: { top: '13.5%', left: '35%', width: 130, height: 130 }, recipeId: 9 },
+    { src: "/assets/food/breakfast10.png", style: { top: '2.5%', left: '70%', width: 160, height: 160 }, recipeId: 10 },
+  ];
+
+  useEffect(() => {
+    fetch("http://localhost:8000/recipes/")
+      .then(res => res.json())
+      .then(data => setRecipes(data));
+  }, []);
 
   useEffect(() => {
     function onScroll() {
@@ -45,19 +62,6 @@ export default function BreakfastRoute({ isAdmin }) {
     pointerEvents: "auto",
   };
 
-  const foodImages = [
-    { src: "/assets/food/breakfast1.png", style: { top: '90%', left: '26%', width: 160, height: 160 } },
-    { src: "/assets/food/breakfast2.png", style: { top: '84%', left: '75%', width: 120, height: 120 } },
-    { src: "/assets/food/breakfast3.png", style: { top: '70%', left: '25%', width: 130, height: 130 } },
-    { src: "/assets/food/breakfast4.png", style: { top: '63%', left: '80%', width: 140, height: 140 } },
-    { src: "/assets/food/breakfast5.png", style: { top: '55%', left: '20%', width: 120, height: 120 } },
-    { src: "/assets/food/breakfast6.png", style: { top: '44%', left: '80%', width: 120, height: 120 } },
-    { src: "/assets/food/breakfast7.png", style: { top: '34%', left: '40%', width: 130, height: 130 } },
-    { src: "/assets/food/breakfast8.png", style: { top: '24%', left: '70%', width: 135, height: 135 } },
-    { src: "/assets/food/breakfast9.png", style: { top: '13.5%', left: '35%', width: 130, height: 130 } },
-    { src: "/assets/food/breakfast10.png", style: { top: '2.5%', left: '70%', width: 160, height: 160 } },
-  ];
-
   const renderTooltip = (recipeNum) => {
     if (tooltipIdx !== recipeNum) return null;
     return (
@@ -81,6 +85,14 @@ export default function BreakfastRoute({ isAdmin }) {
       </div>
     );
   };
+
+  function handleFoodClick(recipeId, isUnlocked) {
+    if (!isUnlocked) return;
+    // Find the recipe by id from state
+    const recipe = recipes.find(r => r.id === recipeId);
+    if (recipe) setSelectedRecipe(recipe);
+    // else show some "not found" error if needed
+  }
 
   return (
     <div className="mx-auto w-full bg-stone-200 max-w-[480px] min-h-screen flex flex-col relative">
@@ -116,7 +128,6 @@ export default function BreakfastRoute({ isAdmin }) {
         {/* Food images */}
         {foodImages.map((img, i) => {
           const recipeNum = i + 1;
-          // UNLOCK ALL IF ADMIN:
           const isUnlocked = isAdmin || unlocked.includes(recipeNum);
 
           return (
@@ -148,9 +159,8 @@ export default function BreakfastRoute({ isAdmin }) {
                 }}
                 onClick={e => {
                   if (isUnlocked) {
-                    setSelectedRecipe(recipeNum);
+                    handleFoodClick(img.recipeId, isUnlocked);
                   } else {
-                    // Prevent tooltip from closing if clicking locked food
                     e.stopPropagation();
                     setTooltipIdx(recipeNum);
                   }
@@ -174,7 +184,6 @@ export default function BreakfastRoute({ isAdmin }) {
               className="bg-gray-200 rounded-xl shadow-lg p-5 min-w-[280px] max-w-xs relative flex flex-col"
               onClick={e => e.stopPropagation()}
             >
-              {/* Close button */}
               <button
                 onClick={() => setSelectedRecipe(null)}
                 className="absolute top-3 right-3 text-2xl font-bold text-black/60 hover:text-black"
@@ -182,28 +191,42 @@ export default function BreakfastRoute({ isAdmin }) {
               >
                 &times;
               </button>
-              {/* Title */}
-              <div className="text-2xl font-bold text-center mb-0">Crimson Sunset</div>
-              <div className="text-md text-center mb-3 text-gray-700 -mt-1">
-                Chilli oil fried egg
-              </div>
-              {/* Stars */}
+              {/* Dynamically display recipe info */}
+              <img src={selectedRecipe.imgUrl} alt={selectedRecipe.nickname} className="mb-2 rounded" />
+              <div className="text-2xl font-bold text-center mb-0">{selectedRecipe.nickname}</div>
+              <div className="text-md text-center mb-3 text-gray-700 -mt-1">{selectedRecipe.real_name}</div>
               <div className="flex items-center justify-center mb-1">
-                <img src="/assets/star_filled.png" alt="star" className="w-9 h-9" />
-                <img src="/assets/star_outline.png" alt="star" className="w-8 h-8" />
-                <img src="/assets/star_outline.png" alt="star" className="w-8 h-8" />
+                {/* Render star icons based on difficulty */}
+                {[...Array(selectedRecipe.difficulty)].map((_, i) => (
+                  <img key={i} src="/assets/star_filled.png" alt="star" className="w-8 h-8" />
+                ))}
+                {[...Array(3 - selectedRecipe.difficulty)].map((_, i) => (
+                  <img key={i} src="/assets/star_outline.png" alt="star" className="w-8 h-8" />
+                ))}
               </div>
-              <div className="text-center mb-3 text-gray-700">Beginner</div>
-              {/* Ingredients */}
+              <div className="text-center mb-3 text-gray-700">
+                {selectedRecipe.difficulty === 1 ? "Beginner" : selectedRecipe.difficulty === 2 ? "Intermediate" : "Advanced"}
+              </div>
               <div className="font-bold mb-0 mt-2">Ingredients:</div>
               <ul className="mb-4 pl-4 text-left text-[16px]">
-                <li>&#8226; x1 Egg</li>
-                <li>&#8226; Chilli oil</li>
+                {selectedRecipe.ingredients.map((item, i) => (
+                  <li key={i}>&#8226; {item}</li>
+                ))}
               </ul>
+              <div className="font-bold mb-0 mt-2">Kitchenware:</div>
+              <ul className="mb-4 pl-4 text-left text-[16px]">
+                {selectedRecipe.kitchenware.map((item, i) => (
+                  <li key={i}>&#8226; {item}</li>
+                ))}
+              </ul>
+              <div className="mb-2 text-gray-700">
+                <span className="font-bold">Time:</span> {selectedRecipe.time} min &nbsp;
+                <span className="font-bold">Servings:</span> {selectedRecipe.servings}
+              </div>
               {/* Buttons */}
               <button
                 className="w-full rounded bg-lime-400 hover:bg-lime-500 text-black text-[17px] font-semibold py-2 mb-2 transition"
-                onClick={() => window.open('https://www.amazon.com/s?k=egg,chilli+oil', '_blank')}
+                onClick={() => window.open('https://www.amazon.com/s?k=' + encodeURIComponent(selectedRecipe.ingredients.join(",")), '_blank')}
               >
                 Buy on Amazon Fresh
               </button>
@@ -217,11 +240,8 @@ export default function BreakfastRoute({ isAdmin }) {
           </div>
         )}
       </div>
-
-      {/* Spacer (h-20 kept as requested) */}
       <div className="h-20"></div>
-
-      {/* Bottom nav */}
+      {/* Bottom nav ... unchanged */}
       <div
         className={`fixed z-40 left-1/2 -translate-x-1/2 max-w-[480px] w-[95vw] transition-all duration-300 ease-in-out ${
           atBottom ? "bottom-0 rounded-none" : "bottom-3 rounded-2xl"
