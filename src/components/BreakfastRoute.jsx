@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from "react";
 import Header from "./Header";
+import { Link } from "react-router-dom"; // Add this!
 
 export default function BreakfastRoute() {
   const [atBottom, setAtBottom] = useState(false);
-  const [selectedRecipe, setSelectedRecipe] = useState(null);
   const [tooltipIdx, setTooltipIdx] = useState(null);
   const [mouse, setMouse] = useState({ x: 0, y: 0 });
+  const [isAdmin, setIsAdmin] = useState(false);
 
-  // Only breakfast1 is unlocked
+  // Only breakfast1 is unlocked unless admin
   const [unlocked] = useState([1]);
 
   const handleFoodClick = (foodType) => {
@@ -27,7 +28,6 @@ export default function BreakfastRoute() {
   // Hide tooltip when clicking outside (but NOT when clicking the locked food image itself)
   useEffect(() => {
     function onClickOutside(e) {
-      // Only close tooltip if clicking outside the locked food image
       if (
         tooltipIdx !== null &&
         !e.target.classList.contains("locked-food-img")
@@ -85,6 +85,13 @@ export default function BreakfastRoute() {
     );
   };
 
+  // Admin login
+  function handleAdminLogin() {
+    const pw = window.prompt("Admin password?");
+    if (pw === "letmein") setIsAdmin(true); // CHANGE THIS PASSWORD!
+    else if (pw) alert("Wrong password.");
+  }
+
   return (
     <div className="mx-auto w-full bg-stone-200 max-w-[480px] min-h-screen flex flex-col relative">
       {/* Header area with 2 bars */}
@@ -107,6 +114,23 @@ export default function BreakfastRoute() {
         </div>
       </div>
 
+      {/* Admin circle button */}
+      {!isAdmin && (
+        <button
+          className="fixed z-50 bottom-28 right-6 bg-white shadow-lg border border-stone-400 rounded-full w-11 h-11 flex items-center justify-center text-lg font-bold hover:bg-yellow-300 transition"
+          title="Admin Login"
+          onClick={handleAdminLogin}
+          style={{ boxShadow: "0 2px 8px #2224" }}
+        >
+          <span role="img" aria-label="lock">🔒</span>
+        </button>
+      )}
+      {isAdmin && (
+        <div className="fixed z-50 bottom-28 right-6 bg-lime-400 rounded-full w-11 h-11 flex items-center justify-center text-lg font-bold border-2 border-lime-700 shadow-lg">
+          <span role="img" aria-label="admin">🛠️</span>
+        </div>
+      )}
+
       {/* Main content area */}
       <div className="relative flex-1 flex flex-col items-center w-full">
         {/* Route map */}
@@ -119,113 +143,52 @@ export default function BreakfastRoute() {
         {/* Food images */}
         {foodImages.map((img, i) => {
           const recipeNum = i + 1;
-          const isUnlocked = unlocked.includes(recipeNum);
-
+          const isUnlocked = isAdmin || unlocked.includes(recipeNum);
           return (
             <React.Fragment key={img.src}>
-              <img
-                src={img.src}
-                alt={`Food ${recipeNum}`}
-                className={
-                  "absolute -translate-x-1/2 transition-transform duration-200 ease-in-out cursor-pointer" +
-                  (isUnlocked ? " hover:scale-110 active:scale-95" : " opacity-80 locked-food-img")
-                }
-                style={{
-                  ...img.style,
-                  ...(isUnlocked ? {} : lockedStyle),
-                }}
-                onMouseEnter={e => {
-                  if (!isUnlocked) {
+              {isUnlocked ? (
+                <Link to={`/recipe/${recipeNum}`}>
+                  <img
+                    src={img.src}
+                    alt={`Food ${recipeNum}`}
+                    className="absolute -translate-x-1/2 transition-transform duration-200 ease-in-out cursor-pointer hover:scale-110 active:scale-95"
+                    style={img.style}
+                    draggable={false}
+                  />
+                </Link>
+              ) : (
+                <img
+                  src={img.src}
+                  alt={`Food ${recipeNum}`}
+                  className="absolute -translate-x-1/2 transition-transform duration-200 ease-in-out cursor-pointer opacity-80 locked-food-img"
+                  style={{ ...img.style, ...lockedStyle }}
+                  onMouseEnter={e => {
                     setTooltipIdx(recipeNum);
                     setMouse({ x: e.clientX, y: e.clientY });
-                  }
-                }}
-                onMouseMove={e => {
-                  if (!isUnlocked && tooltipIdx === recipeNum) {
-                    setMouse({ x: e.clientX, y: e.clientY });
-                  }
-                }}
-                onMouseLeave={() => {
-                  if (!isUnlocked) setTooltipIdx(null);
-                }}
-                onClick={e => {
-                  if (isUnlocked) {
-                    setSelectedRecipe(recipeNum);
-                  } else {
-                    // Prevent tooltip from closing if clicking locked food
+                  }}
+                  onMouseMove={e => {
+                    if (tooltipIdx === recipeNum) setMouse({ x: e.clientX, y: e.clientY });
+                  }}
+                  onMouseLeave={() => setTooltipIdx(null)}
+                  onClick={e => {
+                    // just show tooltip
                     e.stopPropagation();
                     setTooltipIdx(recipeNum);
-                  }
-                }}
-                draggable={false}
-                // Give a class for easy event target checking
-                {...(!isUnlocked ? { "data-locked": "true", className: "absolute -translate-x-1/2 transition-transform duration-200 ease-in-out cursor-pointer opacity-85 locked-food-img" } : {})}
-              />
+                  }}
+                  draggable={false}
+                  data-locked="true"
+                />
+              )}
               {!isUnlocked && renderTooltip(recipeNum)}
             </React.Fragment>
           );
         })}
-
-        {/* Modal/overlay for selected recipe */}
-        {selectedRecipe && (
-          <div
-            className="fixed inset-0 z-50 flex items-center justify-center"
-            onClick={() => setSelectedRecipe(null)}
-            style={{ background: "rgba(0,0,0,0.18)" }}
-          >
-            <div
-              className="bg-gray-200 rounded-xl shadow-lg p-5 min-w-[280px] max-w-xs relative flex flex-col"
-              onClick={e => e.stopPropagation()}
-            >
-              {/* Close button */}
-              <button
-                onClick={() => setSelectedRecipe(null)}
-                className="absolute top-3 right-3 text-2xl font-bold text-black/60 hover:text-black"
-                aria-label="Close"
-              >
-                &times;
-              </button>
-
-              {/* Title */}
-              <div className="text-2xl font-bold text-center mb-0">Crimson Sunset</div>
-              <div className="text-md text-center mb-3 text-gray-700 -mt-1">
-                Chilli oil fried egg
-              </div>
-              {/* Stars */}
-              <div className="flex items-center justify-center mb-1">
-                <img src="/assets/star_filled.png" alt="star" className="w-9 h-9" />
-                <img src="/assets/star_outline.png" alt="star" className="w-8 h-8" />
-                <img src="/assets/star_outline.png" alt="star" className="w-8 h-8" />
-              </div>
-              <div className="text-center mb-3 text-gray-700">Beginner</div>
-              {/* Ingredients */}
-              <div className="font-bold mb-0 mt-2">Ingredients:</div>
-              <ul className="mb-4 pl-4 text-left text-[16px]">
-                <li>&#8226; x1 Egg</li>
-                <li>&#8226; Chilli oil</li>
-              </ul>
-              {/* Buttons */}
-              <button
-                className="w-full rounded bg-lime-400 hover:bg-lime-500 text-black text-[17px] font-semibold py-2 mb-2 transition"
-                onClick={() => window.open('https://www.amazon.com/s?k=egg,chilli+oil', '_blank')}
-              >
-                Buy on Amazon Fresh
-              </button>
-              <button
-                className="w-full rounded bg-orange-400 hover:bg-orange-500 text-black text-[17px] font-semibold py-2"
-                onClick={() => alert('Start cooking!')}
-              >
-                Start cooking!
-              </button>
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Spacer (h-20 kept as requested) */}
       <div className="h-20"></div>
 
-      {/* Bottom nav: fills track width, gets taller at bottom, never fills the whole screen */}
+      {/* Bottom nav ... (unchanged) */}
       <div
         className={`fixed z-40 left-1/2 -translate-x-1/2 max-w-[480px] w-[95vw] transition-all duration-300 ease-in-out ${
           atBottom ? "bottom-0 rounded-none" : "bottom-3 rounded-2xl"
