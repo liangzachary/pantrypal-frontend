@@ -11,7 +11,7 @@ export default function BreakfastRoute({ isAdmin }) {
   // Only breakfast1 is unlocked (unless admin)
   const [unlocked] = useState([1]);
 
-  // --- Link food images to recipe IDs in the backend ---
+  // Images/positions for food nodes
   const foodImages = [
     { src: "/assets/food/breakfast1.png", style: { top: '90%', left: '26%', width: 160, height: 160 }, recipeId: 1 },
     { src: "/assets/food/breakfast2.png", style: { top: '84%', left: '75%', width: 120, height: 120 }, recipeId: 2 },
@@ -41,6 +41,7 @@ export default function BreakfastRoute({ isAdmin }) {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  // Tooltip closes on click outside
   useEffect(() => {
     function onClickOutside(e) {
       if (
@@ -62,6 +63,7 @@ export default function BreakfastRoute({ isAdmin }) {
     pointerEvents: "auto",
   };
 
+  // Tooltip rendering (call per locked image)
   const renderTooltip = (recipeNum) => {
     if (tooltipIdx !== recipeNum) return null;
     return (
@@ -96,7 +98,7 @@ export default function BreakfastRoute({ isAdmin }) {
 
   return (
     <div className="mx-auto w-full bg-stone-200 max-w-[480px] min-h-screen flex flex-col relative">
-      {/* Header area with 2 bars */}
+      {/* Header */}
       <div className="w-full flex flex-col sticky top-0 z-50">
         <div className="w-full z-10 bg-white">
           <Header
@@ -116,7 +118,7 @@ export default function BreakfastRoute({ isAdmin }) {
         </div>
       </div>
 
-      {/* Main content area */}
+      {/* Main content */}
       <div className="relative flex-1 flex flex-col items-center w-full">
         {/* Route map */}
         <img
@@ -125,7 +127,7 @@ export default function BreakfastRoute({ isAdmin }) {
           alt="Breakfast route map"
         />
 
-        {/* Food images */}
+        {/* Food images and tooltips */}
         {foodImages.map((img, i) => {
           const recipeNum = i + 1;
           const isUnlocked = isAdmin || unlocked.includes(recipeNum);
@@ -166,14 +168,14 @@ export default function BreakfastRoute({ isAdmin }) {
                   }
                 }}
                 draggable={false}
-                {...(!isUnlocked ? { "data-locked": "true", className: "absolute -translate-x-1/2 transition-transform duration-200 ease-in-out cursor-pointer opacity-85 locked-food-img" } : {})}
               />
+              {/* Show tooltip if locked */}
               {!isUnlocked && renderTooltip(recipeNum)}
             </React.Fragment>
           );
         })}
 
-        {/* Modal/overlay for selected recipe */}
+        {/* Modal for selected recipe */}
         {selectedRecipe && (
           <div
             className="fixed inset-0 z-50 flex items-center justify-center"
@@ -191,12 +193,11 @@ export default function BreakfastRoute({ isAdmin }) {
               >
                 &times;
               </button>
-              {/* Dynamically display recipe info */}
+              {/* Recipe info */}
               <img src={selectedRecipe.imgUrl} alt={selectedRecipe.nickname} className="mb-2 rounded" />
               <div className="text-2xl font-bold text-center mb-0">{selectedRecipe.nickname}</div>
               <div className="text-md text-center mb-3 text-gray-700 -mt-1">{selectedRecipe.real_name}</div>
               <div className="flex items-center justify-center mb-1">
-                {/* Render star icons based on difficulty */}
                 {[...Array(selectedRecipe.difficulty)].map((_, i) => (
                   <img key={i} src="/assets/star_filled.png" alt="star" className="w-8 h-8" />
                 ))}
@@ -223,7 +224,6 @@ export default function BreakfastRoute({ isAdmin }) {
                 <span className="font-bold">Time:</span> {selectedRecipe.time} min &nbsp;
                 <span className="font-bold">Servings:</span> {selectedRecipe.servings}
               </div>
-              {/* Buttons */}
               <button
                 className="w-full rounded bg-lime-400 hover:bg-lime-500 text-black text-[17px] font-semibold py-2 mb-2 transition"
                 onClick={() => window.open('https://www.amazon.com/s?k=' + encodeURIComponent(selectedRecipe.ingredients.join(",")), '_blank')}
