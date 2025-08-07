@@ -17,7 +17,7 @@ const RecipeDetail = () => {
     const fetchRecipe = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`/recipes/${id}`);
+        const response = await fetch(`https://spatch.onrender.com/recipes/${id}`);
         if (!response.ok) throw new Error('Recipe not found');
         const data = await response.json();
         setRecipe(data);
