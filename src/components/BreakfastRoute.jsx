@@ -3,7 +3,6 @@ import Header from "./Header";
 import { useNavigate } from "react-router-dom"; // Add at the top of your file
 
 // Inside your BreakfastRoute component
-const navigate = useNavigate();
 // Helper to render the stars
 function Stars({ difficulty }) {
   return (
@@ -57,6 +56,7 @@ function TooltipCard({ recipe, mouse }) {
 }
 
 export default function BreakfastRoute({ isAdmin }) {
+  const navigate = useNavigate();
   const [atBottom, setAtBottom] = useState(false);
   const [tooltipIdx, setTooltipIdx] = useState(null); // recipeId (not index)
   const [mouse, setMouse] = useState({ x: 0, y: 0 });
