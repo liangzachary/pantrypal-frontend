@@ -21,11 +21,11 @@ export default function App() {
         {admin ? (
           <Route path="*" element={<AddRecipe isAdmin={admin} />} />
         ) : (
-          [
-            <Route key="home" path="/" element={<HomeScreen />} />,
-            <Route key="breakfast" path="/breakfast" element={<BreakfastRoute isAdmin={admin} setIsAdmin={setAdmin} />} />,
-            <Route key="recipe" path="/recipe/:id" element={<RecipeDetail />} />,
-          ]
+          <>
+            <Route path="/" element={<HomeScreen />} />
+            <Route path="/breakfast" element={<BreakfastRoute isAdmin={admin} setIsAdmin={setAdmin} />} />
+            <Route path="/recipe/:id" element={<RecipeDetail />} />
+          </>
         )}
       </Routes>
     </Router>
