@@ -23,7 +23,7 @@ function Stars({ difficulty }) {
   );
 }
 
-// Tooltip card (preview for locked nodes)
+// Tooltip card (for locked nodes only)
 function TooltipCard({ recipe, mouse }) {
   if (!recipe) return null;
   return (
@@ -44,51 +44,11 @@ function TooltipCard({ recipe, mouse }) {
         fontFamily: "inherit",
       }}
     >
-      <div style={{ fontWeight: 900, fontSize: 28, textAlign: "center" }}>{recipe.nickname}</div>
-      <div style={{ fontSize: 20, textAlign: "center", marginBottom: 4 }}>{recipe.real_name}</div>
-      <div style={{ textAlign: "center", margin: "10px 0 -2px 0" }}>
-        <Stars difficulty={recipe.difficulty} />
-      </div>
       <div style={{
-        fontSize: 20, textAlign: "center", marginBottom: 7,
-        fontWeight: 600, color: "#222"
+        fontWeight: 800, fontSize: 20, textAlign: "center", padding: 12
       }}>
-        {["Beginner", "Intermediate", "Expert"][recipe.difficulty - 1]}
+        Finish the previous recipe to unlock this one
       </div>
-      <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 2 }}>Ingredients:</div>
-      <ul style={{ margin: 0, paddingLeft: 16, fontSize: 17, marginBottom: 8 }}>
-        {recipe.ingredients.map((item, i) => <li key={i}>{item}</li>)}
-      </ul>
-      <button
-        style={{
-          background: "#C5FF4E", color: "#1b3000", fontWeight: 700,
-          width: "100%", fontSize: 20, padding: "7px 0", borderRadius: 8,
-          margin: "10px 0 6px 0", border: "none", boxShadow: "0 2px 5px #bbb"
-        }}
-        onClick={e => { e.stopPropagation(); window.open('https://www.amazon.com/s?k=' + encodeURIComponent(recipe.ingredients.join(",")), '_blank') }}
-      >
-        Buy on Amazon Fresh
-      </button>
-      <button
-        style={{
-          background: "#FF9C4E", color: "#222", fontWeight: 700,
-          width: "100%", fontSize: 20, padding: "7px 0", borderRadius: 8,
-          margin: "0 0 6px 0", border: "none", boxShadow: "0 2px 5px #bbb"
-        }}
-        onClick={e => e.stopPropagation()}
-      >
-        Start cooking!
-      </button>
-      <button
-        style={{
-          background: "#43b7b5", color: "#fff", fontWeight: 700,
-          width: "100%", fontSize: 20, padding: "7px 0", borderRadius: 8,
-          margin: "0 0 2px 0", border: "none", boxShadow: "0 2px 5px #bbb"
-        }}
-        onClick={e => e.stopPropagation()}
-      >
-        Shuffle recipe
-      </button>
     </div>
   );
 }
@@ -162,7 +122,7 @@ export default function BreakfastRoute({ isAdmin }) {
     pointerEvents: "auto",
   };
 
-  // Tooltip rendering (preview card)
+  // Tooltip rendering (locked preview card)
   const renderTooltip = (recipeId) => {
     if (tooltipIdx !== recipeId) return null;
     const recipe = recipes.find(r => r.id === recipeId);
@@ -254,7 +214,7 @@ export default function BreakfastRoute({ isAdmin }) {
           );
         })}
 
-        {/* Modal for selected recipe */}
+        {/* Modal for selected recipe (NO image at top) */}
         {selectedRecipe && (
           <div
             className="fixed inset-0 z-50 flex items-center justify-center"
@@ -272,8 +232,7 @@ export default function BreakfastRoute({ isAdmin }) {
               >
                 &times;
               </button>
-              {/* Recipe info */}
-              <img src={selectedRecipe.imgUrl} alt={selectedRecipe.nickname} className="mb-2 rounded" />
+              {/* Modal recipe info -- NO IMAGE */}
               <div className="text-2xl font-bold text-center mb-0">{selectedRecipe.nickname}</div>
               <div className="text-md text-center mb-3 text-gray-700 -mt-1">{selectedRecipe.real_name}</div>
               <div className="flex items-center justify-center mb-1">
