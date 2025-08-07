@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import BreakfastRoute from "./components/BreakfastRoute";
 import AddRecipe from "./components/AddRecipe";
-import RecipeDetail from "./components/RecipeDetail"; // <-- Import your detail page
+import RecipeDetail from "./components/RecipeDetail";
 
 export default function App() {
   const [admin, setAdmin] = useState(false);
@@ -20,10 +20,19 @@ export default function App() {
         {admin ? (
           <Route path="*" element={<AddRecipe isAdmin={admin} />} />
         ) : (
-          <>
-            <Route path="/" element={<BreakfastRoute isAdmin={admin} setIsAdmin={setAdmin} />} />
-            <Route path="/recipe/:id" element={<RecipeDetail />} />
-          </>
+          // REMOVE the fragment and put these routes *directly*
+          [
+            <Route
+              key="main"
+              path="/"
+              element={<BreakfastRoute isAdmin={admin} setIsAdmin={setAdmin} />}
+            />,
+            <Route
+              key="recipe"
+              path="/recipe/:id"
+              element={<RecipeDetail />}
+            />,
+          ]
         )}
       </Routes>
     </Router>

@@ -13,6 +13,20 @@ const RecipeDetail = () => {
   const fallbackImg =
     'https://cdn.apartmenttherapy.info/image/upload/f_jpg,q_auto:eco,c_fill,g_auto,w_1500,ar_1:1/k%2F2023-07-chili-crisp-fried-eggs%2FChili-Crisp-Fried-Eggs_153';
 
+  // Helper to parse array fields if they're stringified JSON
+  function safeParseArray(val) {
+    if (Array.isArray(val)) return val;
+    if (typeof val === "string") {
+      try {
+        const arr = JSON.parse(val);
+        return Array.isArray(arr) ? arr : [];
+      } catch {
+        return [];
+      }
+    }
+    return [];
+  }
+
   useEffect(() => {
     const fetchRecipe = async () => {
       try {
@@ -20,8 +34,15 @@ const RecipeDetail = () => {
         const response = await fetch(`https://spatch.onrender.com/recipes/${id}`);
         if (!response.ok) throw new Error('Recipe not found');
         const data = await response.json();
-        setRecipe(data);
-        setServings(data.servings || 1);
+        // Normalize all possibly stringified fields to arrays
+        const fixed = {
+          ...data,
+          ingredients: safeParseArray(data.ingredients),
+          kitchenware: safeParseArray(data.kitchenware),
+          steps: safeParseArray(data.steps),
+        };
+        setRecipe(fixed);
+        setServings(fixed.servings || 1);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -90,39 +111,49 @@ const RecipeDetail = () => {
   return (
     <div
       style={{
-        width: 375,
-        height: 812,
-        background: '#EDD7B3',
-        position: 'relative',
-        margin: '0 auto',
-        overflow: 'hidden',
-        borderRadius: 40,
-        boxShadow: '0 2px 20px #0001',
-        display: 'flex',
-        flexDirection: 'column',
+        maxWidth: 480,
+        width: "100%",
+        margin: "0 auto",
+        background: "transparent",
+        minHeight: "100vh",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        position: "relative"
       }}
     >
-      {/* Hero image */}
-      <img
-        style={{
-          width: 375,
-          height: 350,
-          objectFit: 'cover',
-          borderTopLeftRadius: 40,
-          borderTopRightRadius: 40,
-        }}
-        src={recipe.imgUrl || fallbackImg}
-        alt={recipe.nickname || recipe.real_name}
-      />
-
-      {/* Main content area */}
+      {/* Top hero image */}
       <div
         style={{
-          flex: 1,
-          background: '#EDD7B3',
-          position: 'relative',
-          padding: '36px 16px 0 16px',
-          overflowY: 'auto',
+          width: "100%",
+          height: 220,
+          backgroundImage: `url(${recipe.imgUrl || fallbackImg})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          borderTopLeftRadius: 40,
+          borderTopRightRadius: 40,
+          marginTop: 32,
+          boxShadow: "0 8px 32px #0002",
+          position: "relative",
+          zIndex: 1,
+        }}
+      />
+
+      {/* Main floating card, overlaps image */}
+      <div
+        style={{
+          background: "#EDD7B3",
+          borderRadius: 40,
+          boxShadow: "0 2px 20px #0001",
+          width: "100%",
+          marginTop: -60,   // overlap the image
+          position: "relative",
+          zIndex: 2,
+          padding: "32px 16px 150px 16px",  // more bottom padding for mascot
+          minHeight: "550px",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center"
         }}
       >
         {/* Recipe title */}
@@ -133,6 +164,7 @@ const RecipeDetail = () => {
             fontWeight: 900,
             textAlign: 'center',
             marginBottom: 4,
+            fontFamily: "'ComicCAT', 'Fredoka', Arial, sans-serif",
           }}
         >
           {recipe.nickname || 'Crimson Sunset'}
@@ -144,6 +176,7 @@ const RecipeDetail = () => {
             fontSize: 20,
             textAlign: 'center',
             marginBottom: 12,
+            fontFamily: "'ComicCAT', 'Fredoka', Arial, sans-serif",
           }}
         >
           {recipe.real_name || 'Chilli oil fried egg'}
@@ -273,19 +306,19 @@ const RecipeDetail = () => {
             }}
           >
             <ul style={{ listStyle: 'disc', paddingLeft: 24 }}>
-              {(recipe.ingredients || []).map((item, i) => (
+              {recipe.ingredients.map((item, i) => (
                 <li key={i}>{item}</li>
               ))}
             </ul>
             <ul style={{ listStyle: 'disc', paddingLeft: 24 }}>
-              {(recipe.kitchenware || []).map((item, i) => (
+              {recipe.kitchenware.map((item, i) => (
                 <li key={i}>{item}</li>
               ))}
             </ul>
           </div>
         ) : (
           <div style={{ fontSize: 18, marginBottom: 16 }}>
-            {(recipe.steps || []).map((step, i) => (
+            {recipe.steps.map((step, i) => (
               <div key={i} style={{ marginBottom: 12 }}>
                 <b>{i + 1}.</b> {step}
               </div>
@@ -305,6 +338,7 @@ const RecipeDetail = () => {
           display: 'flex',
           alignItems: 'flex-end',
           pointerEvents: 'none',
+          zIndex: 10,
         }}
       >
         <img
