@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from "react";
 import Header from "./Header";
+import { useNavigate } from "react-router-dom"; // Add at the top of your file
 
+// Inside your BreakfastRoute component
+const navigate = useNavigate();
 // Helper to render the stars
 function Stars({ difficulty }) {
   return (
@@ -267,10 +270,9 @@ export default function BreakfastRoute({ isAdmin }) {
                 onClick={() => window.open('https://www.amazon.com/s?k=' + encodeURIComponent(selectedRecipe.ingredients.join(",")), '_blank')}
               >
                 Buy on Amazon Fresh
-              </button>
               <button
                 className="w-full rounded bg-orange-400 hover:bg-orange-500 text-black text-[17px] font-semibold py-2"
-                onClick={() => alert('Start cooking!')}
+                onClick={() => navigate(`/recipe/${selectedRecipe.id}`)}
               >
                 Start cooking!
               </button>
