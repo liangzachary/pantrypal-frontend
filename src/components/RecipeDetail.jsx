@@ -128,7 +128,7 @@ const RecipeDetail = () => {
       <div
         style={{
           width: "100%",
-          height: 600,
+          height: 700,
           backgroundImage: `url(${recipe.imgUrl || fallbackImg})`,
           backgroundSize: "cover",
           backgroundPosition: "center",
