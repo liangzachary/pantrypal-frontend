@@ -1,34 +1,131 @@
 import React, { useEffect, useState } from "react";
 import Header from "./Header";
 
+// Helper to render the stars
+function Stars({ difficulty }) {
+  return (
+    <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+      {[...Array(3)].map((_, i) =>
+        <span
+          key={i}
+          style={{
+            fontSize: 38,
+            color: i < difficulty ? "#FFCA08" : "#222",
+            filter: i < difficulty ? "drop-shadow(0px 2px 4px #FC0)" : "none",
+            marginRight: i < 2 ? 2 : 0,
+            lineHeight: "1",
+          }}
+        >
+          ★
+        </span>
+      )}
+    </span>
+  );
+}
+
+// Tooltip card (preview for locked nodes)
+function TooltipCard({ recipe, mouse }) {
+  if (!recipe) return null;
+  return (
+    <div
+      className="z-[99] fixed"
+      style={{
+        left: mouse.x,
+        top: mouse.y - 18,
+        transform: "translate(-50%,-100%)",
+        background: "#ececec",
+        color: "#222",
+        borderRadius: 16,
+        boxShadow: "0 4px 24px 0 #1115",
+        padding: "18px 22px 14px 22px",
+        minWidth: 270,
+        maxWidth: 340,
+        pointerEvents: "auto",
+        fontFamily: "inherit",
+      }}
+    >
+      <div style={{ fontWeight: 900, fontSize: 28, textAlign: "center" }}>{recipe.nickname}</div>
+      <div style={{ fontSize: 20, textAlign: "center", marginBottom: 4 }}>{recipe.real_name}</div>
+      <div style={{ textAlign: "center", margin: "10px 0 -2px 0" }}>
+        <Stars difficulty={recipe.difficulty} />
+      </div>
+      <div style={{
+        fontSize: 20, textAlign: "center", marginBottom: 7,
+        fontWeight: 600, color: "#222"
+      }}>
+        {["Beginner", "Intermediate", "Expert"][recipe.difficulty - 1]}
+      </div>
+      <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 2 }}>Ingredients:</div>
+      <ul style={{ margin: 0, paddingLeft: 16, fontSize: 17, marginBottom: 8 }}>
+        {recipe.ingredients.map((item, i) => <li key={i}>{item}</li>)}
+      </ul>
+      <button
+        style={{
+          background: "#C5FF4E", color: "#1b3000", fontWeight: 700,
+          width: "100%", fontSize: 20, padding: "7px 0", borderRadius: 8,
+          margin: "10px 0 6px 0", border: "none", boxShadow: "0 2px 5px #bbb"
+        }}
+        onClick={() => window.open('https://www.amazon.com/s?k=' + encodeURIComponent(recipe.ingredients.join(",")), '_blank')}
+      >
+        Buy on Amazon Fresh
+      </button>
+      <button
+        style={{
+          background: "#FF9C4E", color: "#222", fontWeight: 700,
+          width: "100%", fontSize: 20, padding: "7px 0", borderRadius: 8,
+          margin: "0 0 6px 0", border: "none", boxShadow: "0 2px 5px #bbb"
+        }}
+      >
+        Start cooking!
+      </button>
+      <button
+        style={{
+          background: "#43b7b5", color: "#fff", fontWeight: 700,
+          width: "100%", fontSize: 20, padding: "7px 0", borderRadius: 8,
+          margin: "0 0 2px 0", border: "none", boxShadow: "0 2px 5px #bbb"
+        }}
+      >
+        Shuffle recipe
+      </button>
+    </div>
+  );
+}
+
 export default function BreakfastRoute({ isAdmin }) {
   const [atBottom, setAtBottom] = useState(false);
-  const [tooltipIdx, setTooltipIdx] = useState(null);
+  const [tooltipIdx, setTooltipIdx] = useState(null); // Which recipeId (not index)
   const [mouse, setMouse] = useState({ x: 0, y: 0 });
   const [recipes, setRecipes] = useState([]);
   const [selectedRecipe, setSelectedRecipe] = useState(null);
 
-  // Only breakfast1 is unlocked (unless admin)
-  const [unlocked] = useState([1]);
-
-  // Images/positions for food nodes
+  // foodImages: breakfast1.png maps to id:2, breakfast2.png to id:3, etc.
   const foodImages = [
-    { src: "/assets/food/breakfast1.png", style: { top: '90%', left: '26%', width: 160, height: 160 }, recipeId: 1 },
-    { src: "/assets/food/breakfast2.png", style: { top: '84%', left: '75%', width: 120, height: 120 }, recipeId: 2 },
-    { src: "/assets/food/breakfast3.png", style: { top: '70%', left: '25%', width: 130, height: 130 }, recipeId: 3 },
-    { src: "/assets/food/breakfast4.png", style: { top: '63%', left: '80%', width: 140, height: 140 }, recipeId: 4 },
-    { src: "/assets/food/breakfast5.png", style: { top: '55%', left: '20%', width: 120, height: 120 }, recipeId: 5 },
-    { src: "/assets/food/breakfast6.png", style: { top: '44%', left: '80%', width: 120, height: 120 }, recipeId: 6 },
-    { src: "/assets/food/breakfast7.png", style: { top: '34%', left: '40%', width: 130, height: 130 }, recipeId: 7 },
-    { src: "/assets/food/breakfast8.png", style: { top: '24%', left: '70%', width: 135, height: 135 }, recipeId: 8 },
-    { src: "/assets/food/breakfast9.png", style: { top: '13.5%', left: '35%', width: 130, height: 130 }, recipeId: 9 },
-    { src: "/assets/food/breakfast10.png", style: { top: '2.5%', left: '70%', width: 160, height: 160 }, recipeId: 10 },
+    { src: "/assets/food/breakfast1.png", style: { top: '90%', left: '26%', width: 160, height: 160 }, recipeId: 2 },
+    { src: "/assets/food/breakfast2.png", style: { top: '84%', left: '75%', width: 120, height: 120 }, recipeId: 3 },
+    { src: "/assets/food/breakfast3.png", style: { top: '70%', left: '25%', width: 130, height: 130 }, recipeId: 4 },
+    { src: "/assets/food/breakfast4.png", style: { top: '63%', left: '80%', width: 140, height: 140 }, recipeId: 5 },
+    { src: "/assets/food/breakfast5.png", style: { top: '55%', left: '20%', width: 120, height: 120 }, recipeId: 6 },
+    { src: "/assets/food/breakfast6.png", style: { top: '44%', left: '80%', width: 120, height: 120 }, recipeId: 7 },
+    { src: "/assets/food/breakfast7.png", style: { top: '34%', left: '40%', width: 130, height: 130 }, recipeId: 8 },
+    { src: "/assets/food/breakfast8.png", style: { top: '24%', left: '70%', width: 135, height: 135 }, recipeId: 9 },
+    { src: "/assets/food/breakfast9.png", style: { top: '13.5%', left: '35%', width: 130, height: 130 }, recipeId: 10 },
+    { src: "/assets/food/breakfast10.png", style: { top: '2.5%', left: '70%', width: 160, height: 160 }, recipeId: 11 },
   ];
+
+  // Only the first node is unlocked by default (unless admin)
+  const unlocked = isAdmin ? foodImages.map(f => f.recipeId) : [foodImages[0].recipeId];
 
   useEffect(() => {
     fetch("https://spatch.onrender.com/recipes/")
       .then(res => res.json())
-      .then(data => setRecipes(data));
+      .then(data => {
+        setRecipes(data.map(r => ({
+          ...r,
+          ingredients: typeof r.ingredients === "string" ? JSON.parse(r.ingredients) : r.ingredients,
+          kitchenware: typeof r.kitchenware === "string" ? JSON.parse(r.kitchenware) : r.kitchenware,
+          steps: typeof r.steps === "string" ? JSON.parse(r.steps) : r.steps,
+        })));
+      });
   }, []);
 
   useEffect(() => {
@@ -63,37 +160,18 @@ export default function BreakfastRoute({ isAdmin }) {
     pointerEvents: "auto",
   };
 
-  // Tooltip rendering (call per locked image)
-  const renderTooltip = (recipeNum) => {
-    if (tooltipIdx !== recipeNum) return null;
-    return (
-      <div
-        className="pointer-events-none z-[99] fixed transition-all duration-75 text-base"
-        style={{
-          left: mouse.x,
-          top: mouse.y - 38,
-          transform: "translate(-50%,-100%)",
-          background: "#111",
-          color: "#fff",
-          borderRadius: 8,
-          padding: "7px 18px",
-          fontWeight: 600,
-          boxShadow: "0 4px 16px 0 #111b",
-          whiteSpace: "nowrap",
-          fontSize: "1rem",
-        }}
-      >
-        You haven't unlocked this recipe yet
-      </div>
-    );
+  // Tooltip rendering (preview card)
+  const renderTooltip = (recipeId) => {
+    if (tooltipIdx !== recipeId) return null;
+    const recipe = recipes.find(r => r.id === recipeId);
+    if (!recipe) return null;
+    return <TooltipCard recipe={recipe} mouse={mouse} />;
   };
 
   function handleFoodClick(recipeId, isUnlocked) {
     if (!isUnlocked) return;
-    // Find the recipe by id from state
     const recipe = recipes.find(r => r.id === recipeId);
     if (recipe) setSelectedRecipe(recipe);
-    // else show some "not found" error if needed
   }
 
   return (
@@ -129,14 +207,12 @@ export default function BreakfastRoute({ isAdmin }) {
 
         {/* Food images and tooltips */}
         {foodImages.map((img, i) => {
-          const recipeNum = i + 1;
-          const isUnlocked = isAdmin || unlocked.includes(recipeNum);
-
+          const isUnlocked = unlocked.includes(img.recipeId);
           return (
             <React.Fragment key={img.src}>
               <img
                 src={img.src}
-                alt={`Food ${recipeNum}`}
+                alt={`Food ${i + 1}`}
                 className={
                   "absolute -translate-x-1/2 transition-transform duration-200 ease-in-out cursor-pointer" +
                   (isUnlocked ? " hover:scale-110 active:scale-95" : " opacity-80 locked-food-img")
@@ -147,12 +223,12 @@ export default function BreakfastRoute({ isAdmin }) {
                 }}
                 onMouseEnter={e => {
                   if (!isUnlocked) {
-                    setTooltipIdx(recipeNum);
+                    setTooltipIdx(img.recipeId);
                     setMouse({ x: e.clientX, y: e.clientY });
                   }
                 }}
                 onMouseMove={e => {
-                  if (!isUnlocked && tooltipIdx === recipeNum) {
+                  if (!isUnlocked && tooltipIdx === img.recipeId) {
                     setMouse({ x: e.clientX, y: e.clientY });
                   }
                 }}
@@ -164,13 +240,13 @@ export default function BreakfastRoute({ isAdmin }) {
                     handleFoodClick(img.recipeId, isUnlocked);
                   } else {
                     e.stopPropagation();
-                    setTooltipIdx(recipeNum);
+                    setTooltipIdx(img.recipeId);
                   }
                 }}
                 draggable={false}
               />
               {/* Show tooltip if locked */}
-              {!isUnlocked && renderTooltip(recipeNum)}
+              {!isUnlocked && renderTooltip(img.recipeId)}
             </React.Fragment>
           );
         })}
