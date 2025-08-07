@@ -270,6 +270,7 @@ export default function BreakfastRoute({ isAdmin }) {
                 onClick={() => window.open('https://www.amazon.com/s?k=' + encodeURIComponent(selectedRecipe.ingredients.join(",")), '_blank')}
               >
                 Buy on Amazon Fresh
+              </button>
               <button
                 className="w-full rounded bg-orange-400 hover:bg-orange-500 text-black text-[17px] font-semibold py-2"
                 onClick={() => navigate(`/recipe/${selectedRecipe.id}`)}
