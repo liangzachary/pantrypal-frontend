@@ -134,7 +134,7 @@ const RecipeDetail = () => {
           backgroundPosition: "center",
           borderTopLeftRadius: 40,
           borderTopRightRadius: 40,
-          marginTop: 32,
+          // marginTop: 32,
           boxShadow: "0 8px 32px #0002",
           position: "relative",
           zIndex: 1,
