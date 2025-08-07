@@ -148,7 +148,7 @@ const RecipeDetail = () => {
           borderRadius: 40,
           boxShadow: "0 2px 20px #0001",
           width: "100%",
-          marginTop: -5,
+          marginTop: -15,
           position: "relative",
           zIndex: 2,
           height: "100%",         // ensures card fills remaining phone space
