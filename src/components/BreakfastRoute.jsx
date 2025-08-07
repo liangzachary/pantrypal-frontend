@@ -65,7 +65,7 @@ function TooltipCard({ recipe, mouse }) {
           width: "100%", fontSize: 20, padding: "7px 0", borderRadius: 8,
           margin: "10px 0 6px 0", border: "none", boxShadow: "0 2px 5px #bbb"
         }}
-        onClick={() => window.open('https://www.amazon.com/s?k=' + encodeURIComponent(recipe.ingredients.join(",")), '_blank')}
+        onClick={e => { e.stopPropagation(); window.open('https://www.amazon.com/s?k=' + encodeURIComponent(recipe.ingredients.join(",")), '_blank') }}
       >
         Buy on Amazon Fresh
       </button>
@@ -75,6 +75,7 @@ function TooltipCard({ recipe, mouse }) {
           width: "100%", fontSize: 20, padding: "7px 0", borderRadius: 8,
           margin: "0 0 6px 0", border: "none", boxShadow: "0 2px 5px #bbb"
         }}
+        onClick={e => e.stopPropagation()}
       >
         Start cooking!
       </button>
@@ -84,6 +85,7 @@ function TooltipCard({ recipe, mouse }) {
           width: "100%", fontSize: 20, padding: "7px 0", borderRadius: 8,
           margin: "0 0 2px 0", border: "none", boxShadow: "0 2px 5px #bbb"
         }}
+        onClick={e => e.stopPropagation()}
       >
         Shuffle recipe
       </button>
@@ -93,7 +95,7 @@ function TooltipCard({ recipe, mouse }) {
 
 export default function BreakfastRoute({ isAdmin }) {
   const [atBottom, setAtBottom] = useState(false);
-  const [tooltipIdx, setTooltipIdx] = useState(null); // Which recipeId (not index)
+  const [tooltipIdx, setTooltipIdx] = useState(null); // recipeId (not index)
   const [mouse, setMouse] = useState({ x: 0, y: 0 });
   const [recipes, setRecipes] = useState([]);
   const [selectedRecipe, setSelectedRecipe] = useState(null);
@@ -138,7 +140,7 @@ export default function BreakfastRoute({ isAdmin }) {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // Tooltip closes on click outside
+  // Tooltip closes on click outside or mouse leaves
   useEffect(() => {
     function onClickOutside(e) {
       if (
@@ -239,6 +241,7 @@ export default function BreakfastRoute({ isAdmin }) {
                   if (isUnlocked) {
                     handleFoodClick(img.recipeId, isUnlocked);
                   } else {
+                    // Do nothing: locked node should NOT navigate or open modal!
                     e.stopPropagation();
                     setTooltipIdx(img.recipeId);
                   }
