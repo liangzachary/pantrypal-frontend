@@ -1,7 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 
-export default function HomeScreen() {
+export default function homepage() {
   const navigate = useNavigate();
 
   const handleBreakfastClick = () => {
@@ -30,7 +30,7 @@ export default function HomeScreen() {
 
       {/* Mascot Character */}
       <img
-        src="/assets/homescreen/spatch-full-body.png"
+        src="/assets/homepage/spatch-full-body.png"
         alt="Spatch mascot"
         className="absolute left-[183px] top-[30px] w-[189px] h-[222px] object-contain"
       />
@@ -42,7 +42,7 @@ export default function HomeScreen() {
           className="w-full h-full rounded-[20px] bg-[#EE9464] shadow-[4px_4px_4px_0_rgba(0,0,0,0.25)] flex flex-col items-center justify-center cursor-pointer hover:scale-105 active:scale-95 transition-transform duration-200"
         >
           <img
-            src="/assets/homescreen/breakfast-icon.png"
+            src="/assets/homepage/breakfast-icon.png"
             alt="Breakfast icon"
             className="w-[103px] h-[92px] object-contain mb-2"
           />
@@ -59,7 +59,7 @@ export default function HomeScreen() {
           className="w-full h-full rounded-[20px] bg-[#F89921] shadow-[4px_4px_4px_0_rgba(0,0,0,0.25)] flex flex-col items-center justify-center cursor-pointer hover:scale-105 active:scale-95 transition-transform duration-200"
         >
           <img
-            src="/assets/homescreen/lunch-icon.png"
+            src="/assets/homepage/lunch-icon.png"
             alt="Lunch icon"
             className="w-[133px] h-[102px] object-contain mb-2"
           />
@@ -76,7 +76,7 @@ export default function HomeScreen() {
           className="w-full h-full rounded-[20px] bg-[#4FB9B0] shadow-[4px_4px_4px_0_rgba(0,0,0,0.25)] flex flex-col items-center justify-center cursor-pointer hover:scale-105 active:scale-95 transition-transform duration-200"
         >
           <img
-            src="/assets/homescreen/dinner-icon.png"
+            src="/assets/homepage/dinner-icon.png"
             alt="Dinner icon"
             className="w-[103px] h-[92px] object-contain mb-2"
           />
@@ -93,7 +93,7 @@ export default function HomeScreen() {
           className="w-full h-full rounded-[20px] bg-[#FFCB63] shadow-[4px_4px_4px_0_rgba(0,0,0,0.25)] flex flex-col items-center justify-center cursor-pointer hover:scale-105 active:scale-95 transition-transform duration-200"
         >
           <img
-            src="/assets/homescreen/dessert-icon.png"
+            src="/assets/homepage/dessert-icon.png"
             alt="Dessert icon"
             className="w-[123px] h-[110px] object-contain mb-2"
           />
@@ -110,12 +110,12 @@ export default function HomeScreen() {
           className="w-full h-full rounded-[20px] bg-[#F89921] shadow-[4px_4px_4px_0_rgba(0,0,0,0.25)] flex flex-row items-center justify-center cursor-pointer hover:scale-105 active:scale-95 transition-transform duration-200"
         >
           <img
-            src="/assets/homescreen/chef-icon.png"
+            src="/assets/homepage/chef-icon.png"
             alt="Chef icon"
             className="w-[87px] h-[88px] object-contain mr-4"
           />
           <img
-            src="/assets/homescreen/castle-icon.png"
+            src="/assets/homepage/castle-icon.png"
             alt="Castle icon"
             className="w-[83px] h-[81px] object-contain mr-4"
           />
