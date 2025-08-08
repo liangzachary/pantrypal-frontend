@@ -4,6 +4,7 @@ import HomeScreen from "./components/HomeScreen";
 import BreakfastRoute from "./components/BreakfastRoute";
 import AddRecipe from "./components/AddRecipe";
 import RecipeDetail from "./components/RecipeDetail";
+import BottomNav from "./components/BottomNav";
 
 export default function App() {
   const [admin, setAdmin] = useState(false);
@@ -12,7 +13,7 @@ export default function App() {
     <Router>
       <button
         className="fixed top-3 right-3 bg-teal-700 text-white px-2 py-1 rounded z-50"
-        onClick={() => setAdmin(a => !a)}
+        onClick={() => setAdmin((a) => !a)}
       >
         {admin ? "User View" : "Admin"}
       </button>
@@ -23,11 +24,14 @@ export default function App() {
         ) : (
           <>
             <Route path="/" element={<HomeScreen />} />
-            <Route path="/breakfast" element={<BreakfastRoute isAdmin={admin} setIsAdmin={setAdmin} />} />
+            <Route path="/breakfast" element={<BreakfastRoute isAdmin={admin} />} />
             <Route path="/recipe/:id" element={<RecipeDetail />} />
           </>
         )}
       </Routes>
+
+      {/* Always visible bottom nav */}
+      {!admin && <BottomNav />}
     </Router>
   );
 }
