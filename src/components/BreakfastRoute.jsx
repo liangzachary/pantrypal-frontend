@@ -87,17 +87,18 @@ export default function BreakfastRoute({ isAdmin }) {
     }
   }, []);
 
+  // ORIGINAL coordinates (no extra bump). These are overlaid on the map image.
   const foodImages = [
-    { src: "/assets/food/breakfast1.png", style: { top: "90%", left: "26%", width: 160, height: 160 }, recipeId: 2 },
-    { src: "/assets/food/breakfast2.png", style: { top: "84%", left: "75%", width: 120, height: 120 }, recipeId: 3 },
-    { src: "/assets/food/breakfast3.png", style: { top: "70%", left: "25%", width: 130, height: 130 }, recipeId: 4 },
-    { src: "/assets/food/breakfast4.png", style: { top: "63%", left: "80%", width: 140, height: 140 }, recipeId: 5 },
-    { src: "/assets/food/breakfast5.png", style: { top: "55%", left: "20%", width: 120, height: 120 }, recipeId: 6 },
-    { src: "/assets/food/breakfast6.png", style: { top: "44%", left: "80%", width: 120, height: 120 }, recipeId: 7 },
-    { src: "/assets/food/breakfast7.png", style: { top: "34%", left: "40%", width: 130, height: 130 }, recipeId: 8 },
-    { src: "/assets/food/breakfast8.png", style: { top: "24%", left: "70%", width: 135, height: 135 }, recipeId: 9 },
-    { src: "/assets/food/breakfast9.png", style: { top: "13.5%", left: "35%", width: 130, height: 130 }, recipeId: 10 },
-    { src: "/assets/food/breakfast10.png", style: { top: "2.5%", left: "70%", width: 160, height: 160 }, recipeId: 11 },
+    { src: "/assets/food/breakfast1.png",  style: { top: "90%",   left: "26%", width: 160, height: 160 }, recipeId: 2 },
+    { src: "/assets/food/breakfast2.png",  style: { top: "84%",   left: "75%", width: 120, height: 120 }, recipeId: 3 },
+    { src: "/assets/food/breakfast3.png",  style: { top: "70%",   left: "25%", width: 130, height: 130 }, recipeId: 4 },
+    { src: "/assets/food/breakfast4.png",  style: { top: "63%",   left: "80%", width: 140, height: 140 }, recipeId: 5 },
+    { src: "/assets/food/breakfast5.png",  style: { top: "55%",   left: "20%", width: 120, height: 120 }, recipeId: 6 },
+    { src: "/assets/food/breakfast6.png",  style: { top: "44%",   left: "80%", width: 120, height: 120 }, recipeId: 7 },
+    { src: "/assets/food/breakfast7.png",  style: { top: "34%",   left: "40%", width: 130, height: 130 }, recipeId: 8 },
+    { src: "/assets/food/breakfast8.png",  style: { top: "24%",   left: "70%", width: 135, height: 135 }, recipeId: 9 },
+    { src: "/assets/food/breakfast9.png",  style: { top: "13.5%", left: "35%", width: 130, height: 130 }, recipeId: 10 },
+    { src: "/assets/food/breakfast10.png", style: { top: "2.5%",  left: "70%", width: 160, height: 160 }, recipeId: 11 },
   ];
 
   const unlocked = isAdmin ? foodImages.map((f) => f.recipeId) : [foodImages[0].recipeId];
@@ -165,64 +166,65 @@ export default function BreakfastRoute({ isAdmin }) {
         </div>
       </div>
 
-      {/* Main content */}
-      <div className="relative flex-1 flex flex-col items-center w-full">
-        <img
-          ref={mapRef}
-          src="/assets/draft-justtrack.png"
-          className="w-full h-auto border-2 border-stone-400 block -mt-3"
-          alt="Breakfast route map"
-        />
+      {/* Main content (wrapper is NOT relative) */}
+      <div className="flex-1 w-full flex flex-col items-center">
+        {/* Map + nodes are in their own relative box */}
+        <div className="relative w-full">
+          <img
+            ref={mapRef}
+            src="/assets/draft-justtrack.png"
+            className="w-full h-auto border-2 border-stone-400 block -mt-3"
+            alt="Breakfast route map"
+          />
 
-        {foodImages.map((img, i) => {
-          const isUnlocked = unlocked.includes(img.recipeId);
-          return (
-            <React.Fragment key={img.src}>
-              <img
-                src={img.src}
-                alt={`Food ${i + 1}`}
-                className={
-                  "absolute -translate-x-1/2 transition-transform duration-200 ease-in-out cursor-pointer" +
-                  (isUnlocked ? " hover:scale-110 active:scale-95" : " opacity-80 locked-food-img")
-                }
-                style={{ ...img.style, ...(isUnlocked ? {} : lockedStyle) }}
-                onMouseEnter={(e) => {
-                  if (!isUnlocked) {
-                    setTooltipIdx(img.recipeId);
-                    setMouse({ x: e.clientX, y: e.clientY });
+          {foodImages.map((img, i) => {
+            const isUnlocked = unlocked.includes(img.recipeId);
+            return (
+              <React.Fragment key={img.src}>
+                <img
+                  src={img.src}
+                  alt={`Food ${i + 1}`}
+                  className={
+                    "absolute -translate-x-1/2 transition-transform duration-200 ease-in-out cursor-pointer" +
+                    (isUnlocked ? " hover:scale-110 active:scale-95" : " opacity-80 locked-food-img")
                   }
-                }}
-                onMouseMove={(e) => {
-                  if (!isUnlocked && tooltipIdx === img.recipeId) {
-                    setMouse({ x: e.clientX, y: e.clientY });
-                  }
-                }}
-                onMouseLeave={() => {
-                  if (!isUnlocked) setTooltipIdx(null);
-                }}
-                onClick={(e) => {
-                  if (isUnlocked) {
-                    handleFoodClick(img.recipeId, isUnlocked);
-                  } else {
-                    e.stopPropagation();
-                    setTooltipIdx(img.recipeId);
-                  }
-                }}
-                draggable={false}
-              />
-              {!isUnlocked && renderTooltip(img.recipeId)}
-            </React.Fragment>
-          );
-        })}
-
-        {/* reserve space that matches BottomNav's measured docked height */}
-        <div
-          aria-hidden="true"
-          style={{ height: "var(--nav-height, 64px)" }}
-          className="w-full shrink-0"
-        />
+                  style={{ ...img.style, ...(isUnlocked ? {} : lockedStyle) }}
+                  onMouseEnter={(e) => {
+                    if (!isUnlocked) {
+                      setTooltipIdx(img.recipeId);
+                      setMouse({ x: e.clientX, y: e.clientY });
+                    }
+                  }}
+                  onMouseMove={(e) => {
+                    if (!isUnlocked && tooltipIdx === img.recipeId) {
+                      setMouse({ x: e.clientX, y: e.clientY });
+                    }
+                  }}
+                  onMouseLeave={() => {
+                    if (!isUnlocked) setTooltipIdx(null);
+                  }}
+                  onClick={(e) => {
+                    if (isUnlocked) {
+                      handleFoodClick(img.recipeId, isUnlocked);
+                    } else {
+                      e.stopPropagation();
+                      setTooltipIdx(img.recipeId);
+                    }
+                  }}
+                  draggable={false}
+                />
+                {!isUnlocked && renderTooltip(img.recipeId)}
+              </React.Fragment>
+            );
+          })}
+        </div>
       </div>
 
+      {/* Reserve space that matches BottomNav's measured docked height
+          IMPORTANT: spacer is OUTSIDE the relative overlay container */}
+      <div aria-hidden="true" style={{ height: "var(--nav-height, 64px)" }} className="w-full shrink-0" />
+      {/* End spacer */}
+      
       {/* Modal */}
       {selectedRecipe && (
         <div
