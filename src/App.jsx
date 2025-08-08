@@ -13,12 +13,12 @@ export default function App() {
   return (
     <Router>
       {/* Admin toggle button */}
-      <button
+      {/* <button
         className="fixed top-3 right-3 bg-teal-700 text-white px-2 py-1 rounded z-50"
         onClick={() => setAdmin((a) => !a)}
       >
         {admin ? "User View" : "Admin"}
-      </button>
+      </button> */}
 
       {/* Reserve space dynamically: BottomNav sets --nav-reserve */}
       <div style={{ paddingBottom: "var(--nav-reserve, 0px)" }}>
