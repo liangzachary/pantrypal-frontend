@@ -20,7 +20,7 @@ export default function App() {
       </button>
 
       {/* Page content with padding so BottomNav never overlaps */}
-      <div className="pb-18">
+      <div className="pb-20">
         <Routes>
           {admin ? (
             <Route path="*" element={<AddRecipe isAdmin={admin} />} />

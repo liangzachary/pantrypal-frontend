@@ -9,13 +9,13 @@ export default function BottomNav() {
   const [isFloating, setIsFloating] = useState(false);
   const [isScrollable, setIsScrollable] = useState(false);
 
-  // Detect scroll and if page is scrollable
   useEffect(() => {
+    const getDelta = () =>
+      document.documentElement.scrollHeight - document.documentElement.clientHeight;
+
     const checkScrollable = () => {
-      const scrollable =
-        document.documentElement.scrollHeight >
-        document.documentElement.clientHeight;
-      setIsScrollable(scrollable);
+      // require a bit of room to count as scrollable to avoid subpixel gaps
+      setIsScrollable(getDelta() > 16);
     };
 
     const handleScroll = () => {
@@ -23,35 +23,54 @@ export default function BottomNav() {
         setIsFloating(false);
         return;
       }
-      const scrollBottom =
-        window.innerHeight + window.scrollY <
-        document.body.offsetHeight - 60;
-      setIsFloating(scrollBottom);
+      const y = window.scrollY;
+      const nearTop = y < 24;
+      const nearBottom =
+        y + window.innerHeight > document.documentElement.scrollHeight - 24;
+
+      // float only when actually scrolling and not near edges
+      setIsFloating(!nearTop && !nearBottom);
     };
 
     checkScrollable();
     window.addEventListener("resize", checkScrollable);
     window.addEventListener("scroll", handleScroll);
-
     return () => {
       window.removeEventListener("resize", checkScrollable);
       window.removeEventListener("scroll", handleScroll);
     };
   }, [isScrollable]);
 
+  // Reset float on route change & re-check scrollability
+  useEffect(() => {
+    setIsFloating(false);
+    // force a scrollability recheck on new pages
+    const rAF = requestAnimationFrame(() => {
+      const delta = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+      setIsScrollable(delta > 16);
+    });
+    return () => cancelAnimationFrame(rAF);
+  }, [location.pathname]);
+
   return (
     <div
       className={`fixed left-1/2 -translate-x-1/2 z-40 w-full max-w-[480px] transition-all duration-300
-        ${isFloating ? "bottom-3" : "bottom-0"}
+        ${isFloating ? "bottom-3" : "bottom-0"}  /* <— DOCKED vs FLOATING position */
       `}
     >
       <div
-        className={`flex justify-around items-center border-2 border-orange-400 shadow-lg transition-all duration-300
-          ${isFloating
-            ? "bg-amber-300 rounded-2xl py-4 px-6"
-            : "bg-amber-300 rounded-none py-5 px-0"
-          }
-        `}
+        className={
+          `flex justify-around items-center transition-all duration-300 w-full ` +
+          (
+            isFloating
+              // FLOATING: rounded, shadow, full border, inner padding
+              ? "bg-amber-300 rounded-2xl shadow-lg py-4 px-6 border-2 border-orange-400"
+              // DOCKED: flat edges, no shadow, no bottom border, no outer padding
+              : "bg-amber-300 rounded-none shadow-none py-5 px-0 border-t-2 border-orange-400 border-b-0"
+          )
+        }
+        // iOS safe area handled only when docked (so it sits flush)
+        style={!isFloating ? { paddingBottom: "env(safe-area-inset-bottom, 0px)" } : undefined}
       >
         <BottomNavNode
           src="/assets/home.png"
