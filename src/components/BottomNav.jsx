@@ -9,38 +9,42 @@ export default function BottomNav() {
   const [isFloating, setIsFloating] = useState(false);
   const [isScrollable, setIsScrollable] = useState(false);
   const barRef = useRef(null);
-  const [dockHeight, setDockHeight] = useState(64); // measured docked height
+  const [barHeight, setBarHeight] = useState(64); // measured live
 
-  // Measure the bar height (especially in its DOCKED state) and set --nav-height
+  // Measure the actual rendered height of the bar (both docked & floating)
   useEffect(() => {
-    const measure = () => {
-      if (!barRef.current) return;
-      const h = Math.ceil(barRef.current.getBoundingClientRect().height || 64);
-      setDockHeight(h);
-      // <-- This is the bit you asked about
-      document.documentElement.style.setProperty(
-        "--nav-height",
-        `calc(${h}px + env(safe-area-inset-bottom, 0px))`
-      );
+    if (!barRef.current) return;
+    const el = barRef.current;
+
+    const update = () => {
+      const h = Math.ceil(el.getBoundingClientRect().height || 64);
+      setBarHeight(h);
     };
 
-    measure();
-    window.addEventListener("resize", measure);
-    return () => window.removeEventListener("resize", measure);
-  }, [isFloating]); // re-measure if we change between floating/docked
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
 
-  // Reserve space only when the page is NOT scrollable
+    window.addEventListener("resize", update);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", update);
+    };
+  }, []);
+
+  // Always reserve space for the bar (prevents bottom “bounce”)
   useEffect(() => {
-    const value = isScrollable
-      ? "0px"
-      : `calc(${dockHeight}px + env(safe-area-inset-bottom, 0px))`;
-    document.documentElement.style.setProperty("--nav-reserve", value);
+    const reserve = `calc(${barHeight}px + env(safe-area-inset-bottom, 0px))`;
+    document.documentElement.style.setProperty("--nav-reserve", reserve);
+    // If you used --nav-height anywhere, mirror it too:
+    document.documentElement.style.setProperty("--nav-height", `${barHeight}px`);
     return () => {
       document.documentElement.style.setProperty("--nav-reserve", "0px");
+      document.documentElement.style.setProperty("--nav-height", "0px");
     };
-  }, [isScrollable, dockHeight]);
+  }, [barHeight]);
 
-  // Detect scrollability + toggle floating
+  // Detect scrollability + toggle floating (purely visual now)
   useEffect(() => {
     const getDelta = () =>
       document.documentElement.scrollHeight -
@@ -71,7 +75,7 @@ export default function BottomNav() {
     };
   }, [isScrollable]);
 
-  // Reset float + re-evaluate on route change
+  // Reset float on route change & re-check scrollability
   useEffect(() => {
     setIsFloating(false);
     const rAF = requestAnimationFrame(() => {
@@ -94,15 +98,10 @@ export default function BottomNav() {
         className={
           `flex justify-around items-center transition-all duration-300 w-full ` +
           (isFloating
-            ? "bg-amber-300 rounded-2xl shadow-lg py-4 px-6 border-2 border-orange-400" // floating
-            : "bg-amber-300 rounded-none shadow-none py-5 px-0 border-t-2 border-orange-400 border-b-0" // docked
-          )
+            ? "bg-amber-300 rounded-2xl shadow-lg py-4 px-6 border-2 border-orange-400"
+            : "bg-amber-300 rounded-none shadow-none py-5 px-0 border-t-2 border-orange-400 border-b-0")
         }
-        style={
-          !isFloating
-            ? { paddingBottom: "env(safe-area-inset-bottom, 0px)" }
-            : undefined
-        }
+        style={!isFloating ? { paddingBottom: "env(safe-area-inset-bottom, 0px)" } : undefined}
       >
         <BottomNavNode
           src="/assets/home.png"
