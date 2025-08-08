@@ -78,7 +78,7 @@ export default function BottomNav() {
         y + window.innerHeight >
         document.documentElement.scrollHeight - 24;
 
-      setIsFloating(!nearTop && !nearBottom);
+      setIsFloating(!nearBottom);
     };
 
     checkScrollable();
