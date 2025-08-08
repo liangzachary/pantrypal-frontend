@@ -11,8 +11,10 @@ export default function BottomNav() {
   const barRef = useRef(null);
   const [barHeight, setBarHeight] = useState(64);
 
-  // lift amount when the bar is docked (rectangular)
+  // how much to lift the whole bar when docked (rectangular)
   const LIFT_DOCKED_PX = 8;
+  // how much to nudge the icons up inside the docked bar
+  const ICON_LIFT_DOCKED_PX = 10;
 
   // --- simple modal state ---
   const [modalOpen, setModalOpen] = useState(false);
@@ -59,7 +61,7 @@ export default function BottomNav() {
     };
   }, [barHeight]);
 
-  // Detect scrollability + toggle floating
+  // Detect scrollability + toggle floating (dock ONLY near bottom)
   useEffect(() => {
     const getDelta = () =>
       document.documentElement.scrollHeight -
@@ -72,12 +74,11 @@ export default function BottomNav() {
         setIsFloating(false);
         return;
       }
-      const y = window.scrollY;
-      const nearTop = y < 24;
       const nearBottom =
-        y + window.innerHeight >
+        window.scrollY + window.innerHeight >
         document.documentElement.scrollHeight - 24;
 
+      // float everywhere except near the bottom
       setIsFloating(!nearBottom);
     };
 
@@ -112,7 +113,7 @@ export default function BottomNav() {
         <div
           ref={barRef}
           className={
-            `flex justify-around items-center transition-all duration-300 w-full ` +
+            `transition-all duration-300 w-full ` +
             (isFloating
               ? "bg-amber-300 rounded-2xl shadow-lg py-4 px-6 border-2 border-orange-400"
               : "bg-amber-300 rounded-none shadow-none py-5 px-0 border-t-2 border-orange-400 border-b-0")
@@ -128,24 +129,30 @@ export default function BottomNav() {
               : undefined
           }
         >
-          <BottomNavNode
-            src="/assets/home.png"
-            alt="Home"
-            onClick={() => navigate("/")}
-            className="aspect-[0.97] w-[24px] sm:w-[31px]"
-          />
-          <BottomNavNode
-            src="/assets/profile.png"
-            alt="Profile"
-            onClick={openModal} // not implemented -> modal
-            className="w-8 sm:w-10 aspect-square"
-          />
-          <BottomNavNode
-            src="/assets/leaderboard.png"
-            alt="Leaderboard"
-            onClick={openModal} // not implemented -> modal
-            className="aspect-[0.97] w-[26px] sm:w-[33px]"
-          />
+          {/* inner wrapper so we can nudge icons up only when docked */}
+          <div
+            className="flex justify-around items-center w-full"
+            style={!isFloating ? { transform: `translateY(-${ICON_LIFT_DOCKED_PX}px)` } : undefined}
+          >
+            <BottomNavNode
+              src="/assets/home.png"
+              alt="Home"
+              onClick={() => navigate("/")}
+              className="aspect-[0.97] w-[24px] sm:w-[31px]"
+            />
+            <BottomNavNode
+              src="/assets/profile.png"
+              alt="Profile"
+              onClick={openModal} // not implemented -> modal
+              className="w-8 sm:w-10 aspect-square"
+            />
+            <BottomNavNode
+              src="/assets/leaderboard.png"
+              alt="Leaderboard"
+              onClick={openModal} // not implemented -> modal
+              className="aspect-[0.97] w-[26px] sm:w-[33px]"
+            />
+          </div>
         </div>
       </div>
 
