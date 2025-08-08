@@ -18,17 +18,24 @@ export default function App() {
         {admin ? "User View" : "Admin"}
       </button>
 
-      <Routes>
-        {admin ? (
-          <Route path="*" element={<AddRecipe isAdmin={admin} />} />
-        ) : (
-          <>
-            <Route path="/" element={<HomeScreen />} />
-            <Route path="/breakfast" element={<BreakfastRoute isAdmin={admin} />} />
-            <Route path="/recipe/:id" element={<RecipeDetail />} />
-          </>
-        )}
-      </Routes>
+      <Router>
+        <div className="pb-20"> {/* ensures space for bottom nav */}
+          <Routes>
+            {admin ? (
+              <Route path="*" element={<AddRecipe isAdmin={admin} />} />
+            ) : (
+              <>
+                <Route path="/" element={<HomeScreen />} />
+                <Route path="/breakfast" element={<BreakfastRoute isAdmin={admin} />} />
+                <Route path="/recipe/:id" element={<RecipeDetail />} />
+              </>
+            )}
+          </Routes>
+        </div>
+
+        {!admin && <BottomNav />}
+      </Router>
+
 
       {/* Always visible bottom nav */}
       {!admin && <BottomNav />}

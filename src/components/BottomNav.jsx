@@ -1,16 +1,58 @@
-// components/BottomNav.jsx
-import React from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import BottomNavNode from "./BottomNavNode";
 
 export default function BottomNav() {
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const [isFloating, setIsFloating] = useState(false);
+  const [isScrollable, setIsScrollable] = useState(false);
+
+  // Detect scroll and if page is scrollable
+  useEffect(() => {
+    const checkScrollable = () => {
+      const scrollable =
+        document.documentElement.scrollHeight >
+        document.documentElement.clientHeight;
+      setIsScrollable(scrollable);
+    };
+
+    const handleScroll = () => {
+      if (!isScrollable) {
+        setIsFloating(false);
+        return;
+      }
+      const scrollBottom =
+        window.innerHeight + window.scrollY <
+        document.body.offsetHeight - 60;
+      setIsFloating(scrollBottom);
+    };
+
+    checkScrollable();
+    window.addEventListener("resize", checkScrollable);
+    window.addEventListener("scroll", handleScroll);
+
+    return () => {
+      window.removeEventListener("resize", checkScrollable);
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, [isScrollable]);
 
   return (
     <div
-      className="fixed z-40 left-1/2 -translate-x-1/2 bottom-3 w-[95vw] max-w-[480px] px-2"
+      className={`fixed left-1/2 -translate-x-1/2 z-40 w-full max-w-[480px] transition-all duration-300
+        ${isFloating ? "bottom-3" : "bottom-0"}
+      `}
     >
-      <div className="flex justify-around items-center bg-amber-300 rounded-2xl border-2 border-orange-400 shadow-lg py-4 px-6">
+      <div
+        className={`flex justify-around items-center border-2 border-orange-400 shadow-lg transition-all duration-300
+          ${isFloating
+            ? "bg-amber-300 rounded-2xl py-4 px-6"
+            : "bg-amber-300 rounded-none py-5 px-0"
+          }
+        `}
+      >
         <BottomNavNode
           src="/assets/home.png"
           alt="Home"

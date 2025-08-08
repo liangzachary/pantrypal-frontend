@@ -13,7 +13,7 @@ export default function HomeScreen() {
   };
 
   return (
-    <div className="w-full h-screen bg-[#F6DFBC] relative overflow-hidden max-w-[375px] mx-auto">
+    <div className="w-full h-screen bg-[#F6DFBC] relative overflow-hidden max-w-[480px] mx-auto">
       {/* Welcome Text */}
       <div className="absolute left-[14px] top-[65px]">
         <span className="text-black font-nunito text-[28px] font-normal leading-[36px]">
