@@ -11,17 +11,14 @@ export default function BottomNav() {
   const barRef = useRef(null);
   const [barHeight, setBarHeight] = useState(64);
 
-  // how much to lift the whole bar when docked (rectangular)
-  const LIFT_DOCKED_PX = 8;
-  // how much to nudge the icons up inside the docked bar
-  const ICON_LIFT_DOCKED_PX = 10;
+  // how much to nudge the icons up when DOCKED (rectangular bar)
+  const ICON_LIFT_DOCKED_PX = 12;
 
-  // --- simple modal state ---
+  // --- modal (unchanged) ---
   const [modalOpen, setModalOpen] = useState(false);
   const openModal = () => setModalOpen(true);
   const closeModal = () => setModalOpen(false);
 
-  // Close modal on Esc
   useEffect(() => {
     if (!modalOpen) return;
     const onKey = (e) => e.key === "Escape" && closeModal();
@@ -29,28 +26,19 @@ export default function BottomNav() {
     return () => window.removeEventListener("keydown", onKey);
   }, [modalOpen]);
 
-  // Measure the bar height
+  // measure
   useEffect(() => {
     if (!barRef.current) return;
     const el = barRef.current;
-
-    const update = () => {
-      const h = Math.ceil(el.getBoundingClientRect().height || 64);
-      setBarHeight(h);
-    };
-
+    const update = () => setBarHeight(Math.ceil(el.getBoundingClientRect().height || 64));
     update();
     const ro = new ResizeObserver(update);
     ro.observe(el);
-
     window.addEventListener("resize", update);
-    return () => {
-      ro.disconnect();
-      window.removeEventListener("resize", update);
-    };
+    return () => { ro.disconnect(); window.removeEventListener("resize", update); };
   }, []);
 
-  // Always reserve space for the bar
+  // reserve space
   useEffect(() => {
     const reserve = `calc(${barHeight}px + env(safe-area-inset-bottom, 0px))`;
     document.documentElement.style.setProperty("--nav-reserve", reserve);
@@ -61,43 +49,33 @@ export default function BottomNav() {
     };
   }, [barHeight]);
 
-  // Detect scrollability + toggle floating (dock ONLY near bottom)
+  // float except near bottom
   useEffect(() => {
-    const getDelta = () =>
-      document.documentElement.scrollHeight -
-      document.documentElement.clientHeight;
-
-    const checkScrollable = () => setIsScrollable(getDelta() > 16);
-
-    const handleScroll = () => {
-      if (!isScrollable) {
-        setIsFloating(false);
-        return;
-      }
+    const delta = () =>
+      document.documentElement.scrollHeight - document.documentElement.clientHeight;
+    const checkScrollable = () => setIsScrollable(delta() > 16);
+    const onScroll = () => {
+      if (!isScrollable) return setIsFloating(false);
       const nearBottom =
         window.scrollY + window.innerHeight >
         document.documentElement.scrollHeight - 24;
-
-      // float everywhere except near the bottom
       setIsFloating(!nearBottom);
     };
-
     checkScrollable();
     window.addEventListener("resize", checkScrollable);
-    window.addEventListener("scroll", handleScroll);
+    window.addEventListener("scroll", onScroll);
     return () => {
       window.removeEventListener("resize", checkScrollable);
-      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("scroll", onScroll);
     };
   }, [isScrollable]);
 
-  // Reset float on route change
+  // reset on route change
   useEffect(() => {
     setIsFloating(false);
     const rAF = requestAnimationFrame(() => {
       const delta =
-        document.documentElement.scrollHeight -
-        document.documentElement.clientHeight;
+        document.documentElement.scrollHeight - document.documentElement.clientHeight;
       setIsScrollable(delta > 16);
     });
     return () => cancelAnimationFrame(rAF);
@@ -118,18 +96,14 @@ export default function BottomNav() {
               ? "bg-amber-300 rounded-2xl shadow-lg py-4 px-6 border-2 border-orange-400"
               : "bg-amber-300 rounded-none shadow-none py-5 px-0 border-t-2 border-orange-400 border-b-0")
           }
+          /* 🚫 No translateY here — keep bar flush to the bottom */
           style={
             !isFloating
-              ? {
-                  // keep notch room AND add a little extra
-                  paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 6px)",
-                  // lift the whole bar slightly so icons sit higher
-                  transform: `translateY(-${LIFT_DOCKED_PX}px)`,
-                }
+              ? { paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 6px)" }
               : undefined
           }
         >
-          {/* inner wrapper so we can nudge icons up only when docked */}
+          {/* Only icons are nudged up when DOCKED */}
           <div
             className="flex justify-around items-center w-full"
             style={!isFloating ? { transform: `translateY(-${ICON_LIFT_DOCKED_PX}px)` } : undefined}
@@ -143,20 +117,19 @@ export default function BottomNav() {
             <BottomNavNode
               src="/assets/profile.png"
               alt="Profile"
-              onClick={openModal} // not implemented -> modal
+              onClick={() => setModalOpen(true)}
               className="w-8 sm:w-10 aspect-square"
             />
             <BottomNavNode
               src="/assets/leaderboard.png"
               alt="Leaderboard"
-              onClick={openModal} // not implemented -> modal
+              onClick={() => setModalOpen(true)}
               className="aspect-[0.97] w-[26px] sm:w-[33px]"
             />
           </div>
         </div>
       </div>
 
-      {/* Modal */}
       {modalOpen && (
         <div
           className="fixed inset-0 z-[9999] flex items-center justify-center"
