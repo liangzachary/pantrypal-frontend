@@ -31,7 +31,7 @@ const RecipeDetail = () => {
     return [];
   }
 
-  // Inject CSS for pager buttons once
+  // Inject CSS for pager buttons once (no blue highlight, no default styles)
   useEffect(() => {
     const id = 'pager-btn-css';
     if (!document.getElementById(id)) {
@@ -39,15 +39,17 @@ const RecipeDetail = () => {
       style.id = id;
       style.textContent = `
         .step-pager-btn {
+          background: transparent;
+          border: 0;
+          padding: 0;
           outline: none;
+          appearance: none;
+          -webkit-appearance: none;
           -webkit-tap-highlight-color: transparent;
+          touch-action: manipulation;
         }
-        .step-pager-btn:focus { outline: none; }
-        /* Show focus when navigating with keyboard only */
-        .step-pager-btn:focus-visible {
-          outline: 2px solid #1a1a1a;
-          outline-offset: 2px;
-        }
+        .step-pager-btn:focus,
+        .step-pager-btn:focus-visible { outline: none; }
       `;
       document.head.appendChild(style);
     }
@@ -387,28 +389,24 @@ const RecipeDetail = () => {
                       left: -6,
                       top: '50%',
                       transform: 'translateY(-50%)',
-                      width: 44,
-                      height: 44,
-                      borderRadius: 12,
-                      border: 'none',
-                      background: '#4FB9AF',
-                      boxShadow: '0 4px 12px #0002',
-                      opacity: stepPage === 0 ? 0.45 : 1,
+                      width: 32,
+                      height: 32,
                       cursor: stepPage === 0 ? 'default' : 'pointer',
                       display: 'grid',
                       placeItems: 'center',
                     }}
                   >
                     <img
-                      src="/assets/icons/arrow-left.png" /* decorative */
+                      src="/assets/icons/arrow-left.png"
                       alt=""
                       aria-hidden="true"
                       draggable={false}
                       style={{
-                        width: 24,
-                        height: 24,
+                        width: 32,
+                        height: 32,
+                        display: 'block',
                         pointerEvents: 'none',
-                        filter: stepPage === 0 ? 'grayscale(1) opacity(0.7)' : 'none',
+                        filter: stepPage === 0 ? 'grayscale(1) opacity(0.5)' : 'none',
                       }}
                     />
                   </button>
@@ -424,13 +422,8 @@ const RecipeDetail = () => {
                       right: -6,
                       top: '50%',
                       transform: 'translateY(-50%)',
-                      width: 44,
-                      height: 44,
-                      borderRadius: 12,
-                      border: 'none',
-                      background: '#4FB9AF',
-                      boxShadow: '0 4px 12px #0002',
-                      opacity: stepPage >= totalPages - 1 ? 0.45 : 1,
+                      width: 32,
+                      height: 32,
                       cursor: stepPage >= totalPages - 1 ? 'default' : 'pointer',
                       display: 'grid',
                       placeItems: 'center',
@@ -442,10 +435,11 @@ const RecipeDetail = () => {
                       aria-hidden="true"
                       draggable={false}
                       style={{
-                        width: 24,
-                        height: 24,
+                        width: 32,
+                        height: 32,
+                        display: 'block',
                         pointerEvents: 'none',
-                        filter: stepPage >= totalPages - 1 ? 'grayscale(1) opacity(0.7)' : 'none',
+                        filter: stepPage >= totalPages - 1 ? 'grayscale(1) opacity(0.5)' : 'none',
                       }}
                     />
                   </button>
