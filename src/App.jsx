@@ -11,6 +11,7 @@ export default function App() {
 
   return (
     <Router>
+      {/* Admin toggle button */}
       <button
         className="fixed top-3 right-3 bg-teal-700 text-white px-2 py-1 rounded z-50"
         onClick={() => setAdmin((a) => !a)}
@@ -18,26 +19,25 @@ export default function App() {
         {admin ? "User View" : "Admin"}
       </button>
 
-      <Router>
-        <div className="pb-20"> {/* ensures space for bottom nav */}
-          <Routes>
-            {admin ? (
-              <Route path="*" element={<AddRecipe isAdmin={admin} />} />
-            ) : (
-              <>
-                <Route path="/" element={<HomeScreen />} />
-                <Route path="/breakfast" element={<BreakfastRoute isAdmin={admin} />} />
-                <Route path="/recipe/:id" element={<RecipeDetail />} />
-              </>
-            )}
-          </Routes>
-        </div>
+      {/* Page content with padding so BottomNav never overlaps */}
+      <div className="pb-20">
+        <Routes>
+          {admin ? (
+            <Route path="*" element={<AddRecipe isAdmin={admin} />} />
+          ) : (
+            <>
+              <Route path="/" element={<HomeScreen />} />
+              <Route
+                path="/breakfast"
+                element={<BreakfastRoute isAdmin={admin} />}
+              />
+              <Route path="/recipe/:id" element={<RecipeDetail />} />
+            </>
+          )}
+        </Routes>
+      </div>
 
-        {!admin && <BottomNav />}
-      </Router>
-
-
-      {/* Always visible bottom nav */}
+      {/* Always visible bottom nav in user mode */}
       {!admin && <BottomNav />}
     </Router>
   );
