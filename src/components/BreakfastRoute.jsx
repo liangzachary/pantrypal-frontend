@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Header from "./Header";
 import { useNavigate } from "react-router-dom";
 
-// Helper to render stars
+// Helper to render stars (kept in case you need it later)
 function Stars({ difficulty }) {
   return (
     <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
@@ -65,6 +65,38 @@ export default function BreakfastRoute({ isAdmin }) {
   const [mouse, setMouse] = useState({ x: 0, y: 0 });
   const [recipes, setRecipes] = useState([]);
   const [selectedRecipe, setSelectedRecipe] = useState(null);
+
+  // ref to ensure we scroll after the map image is laid out
+  const mapRef = useRef(null);
+
+  // Auto-scroll to bottom on first mount
+  useEffect(() => {
+    const scrollToBottom = () => {
+      // instant jump; change to "smooth" if you prefer the animation
+      window.scrollTo({
+        top: document.documentElement.scrollHeight,
+        behavior: "auto",
+      });
+    };
+
+    if (mapRef.current?.complete) {
+      // image already loaded (from cache)
+      requestAnimationFrame(scrollToBottom);
+    } else if (mapRef.current) {
+      // wait for image load
+      const onLoad = () => {
+        requestAnimationFrame(scrollToBottom);
+        mapRef.current?.removeEventListener("load", onLoad);
+      };
+      mapRef.current.addEventListener("load", onLoad);
+      // safety fallback in case the load event is missed
+      const id = setTimeout(scrollToBottom, 400);
+      return () => {
+        clearTimeout(id);
+        mapRef.current?.removeEventListener("load", onLoad);
+      };
+    }
+  }, []);
 
   const foodImages = [
     { src: "/assets/food/breakfast1.png", style: { top: "90%", left: "26%", width: 160, height: 160 }, recipeId: 2 },
@@ -164,6 +196,7 @@ export default function BreakfastRoute({ isAdmin }) {
       {/* Main content */}
       <div className="relative flex-1 flex flex-col items-center w-full">
         <img
+          ref={mapRef}
           src="/assets/draft-justtrack.png"
           className="w-full h-auto border-2 border-stone-400 block -mt-3"
           alt="Breakfast route map"
@@ -286,9 +319,7 @@ export default function BreakfastRoute({ isAdmin }) {
                 onClick={() =>
                   window.open(
                     "https://www.amazon.com/s?k=" +
-                      encodeURIComponent(
-                        selectedRecipe.ingredients.join(",")
-                      ),
+                      encodeURIComponent(selectedRecipe.ingredients.join(",")),
                     "_blank"
                   )
                 }
