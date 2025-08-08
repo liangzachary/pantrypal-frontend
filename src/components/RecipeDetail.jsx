@@ -372,14 +372,14 @@ const RecipeDetail = () => {
                     }}
                   >
                     <img
-                      src="/assets/icons/arrow-triangle.png"   // <-- your arrow PNG
+                      src="/assets/icons/arrow-left.png"   // <-- your arrow PNG
                       alt=""                                    // decorative
                       aria-hidden="true"
                       draggable={false}
                       style={{
                         width: 24,
                         height: 24,
-                        transform: 'scaleX(-1)',               // flip for "previous"
+                        // transform: 'scaleX(-1)',               // flip for "previous"
                         pointerEvents: 'none',
                         filter: stepPage === 0 ? 'grayscale(1) opacity(0.7)' : 'none',
                       }}
@@ -408,7 +408,7 @@ const RecipeDetail = () => {
                     }}
                   >
                     <img
-                      src="/assets/icons/arrow-triangle.png"
+                      src="/assets/icons/arrow-right.png"
                       alt=""
                       aria-hidden="true"
                       draggable={false}
