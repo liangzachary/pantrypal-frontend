@@ -7,7 +7,7 @@ export default function RewardScreen() {
 
   // Tweak these to size/position the spinning star
   const STAR_SIZE = 600; // px
-  const STAR_TOP  = 350; // px from the top
+  const STAR_TOP  = 200; // px from the top
 
   return (
     <div
@@ -63,7 +63,7 @@ export default function RewardScreen() {
           <img
             src="/assets/reward/whiskers.png"
             alt="Wiskers the Wisk mascot"
-            className="w-[700px] h-[700px] object-contain drop-shadow-lg"
+            className="w-[600px] h-[600px] object-contain drop-shadow-lg"
           />
         </div>
 
