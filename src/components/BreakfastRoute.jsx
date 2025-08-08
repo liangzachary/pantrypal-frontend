@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import Header from "./Header";
 import { useNavigate } from "react-router-dom";
 
-// Helper to render stars (kept in case you need it later)
+// Helper to render stars (kept if you use it elsewhere)
 function Stars({ difficulty }) {
   return (
     <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
@@ -45,14 +45,7 @@ function TooltipCard({ recipe, mouse }) {
         fontFamily: "inherit",
       }}
     >
-      <div
-        style={{
-          fontWeight: 800,
-          fontSize: 20,
-          textAlign: "center",
-          padding: 12,
-        }}
-      >
+      <div style={{ fontWeight: 800, fontSize: 20, textAlign: "center", padding: 12 }}>
         Finish the previous recipe to unlock this one
       </div>
     </div>
@@ -69,10 +62,9 @@ export default function BreakfastRoute({ isAdmin }) {
   // ref to ensure we scroll after the map image is laid out
   const mapRef = useRef(null);
 
-  // Auto-scroll to bottom on first mount
+  // Auto-scroll to bottom on first mount (after the map image lays out)
   useEffect(() => {
     const scrollToBottom = () => {
-      // instant jump; change to "smooth" if you prefer the animation
       window.scrollTo({
         top: document.documentElement.scrollHeight,
         behavior: "auto",
@@ -80,17 +72,14 @@ export default function BreakfastRoute({ isAdmin }) {
     };
 
     if (mapRef.current?.complete) {
-      // image already loaded (from cache)
       requestAnimationFrame(scrollToBottom);
     } else if (mapRef.current) {
-      // wait for image load
       const onLoad = () => {
         requestAnimationFrame(scrollToBottom);
         mapRef.current?.removeEventListener("load", onLoad);
       };
       mapRef.current.addEventListener("load", onLoad);
-      // safety fallback in case the load event is missed
-      const id = setTimeout(scrollToBottom, 400);
+      const id = setTimeout(scrollToBottom, 400); // fallback
       return () => {
         clearTimeout(id);
         mapRef.current?.removeEventListener("load", onLoad);
@@ -111,9 +100,7 @@ export default function BreakfastRoute({ isAdmin }) {
     { src: "/assets/food/breakfast10.png", style: { top: "2.5%", left: "70%", width: 160, height: 160 }, recipeId: 11 },
   ];
 
-  const unlocked = isAdmin
-    ? foodImages.map((f) => f.recipeId)
-    : [foodImages[0].recipeId];
+  const unlocked = isAdmin ? foodImages.map((f) => f.recipeId) : [foodImages[0].recipeId];
 
   useEffect(() => {
     fetch("https://spatch.onrender.com/recipes/")
@@ -122,16 +109,9 @@ export default function BreakfastRoute({ isAdmin }) {
         setRecipes(
           data.map((r) => ({
             ...r,
-            ingredients:
-              typeof r.ingredients === "string"
-                ? JSON.parse(r.ingredients)
-                : r.ingredients,
-            kitchenware:
-              typeof r.kitchenware === "string"
-                ? JSON.parse(r.kitchenware)
-                : r.kitchenware,
-            steps:
-              typeof r.steps === "string" ? JSON.parse(r.steps) : r.steps,
+            ingredients: typeof r.ingredients === "string" ? JSON.parse(r.ingredients) : r.ingredients,
+            kitchenware: typeof r.kitchenware === "string" ? JSON.parse(r.kitchenware) : r.kitchenware,
+            steps: typeof r.steps === "string" ? JSON.parse(r.steps) : r.steps,
           }))
         );
       });
@@ -139,10 +119,7 @@ export default function BreakfastRoute({ isAdmin }) {
 
   useEffect(() => {
     function onClickOutside(e) {
-      if (
-        tooltipIdx !== null &&
-        !e.target.classList.contains("locked-food-img")
-      ) {
+      if (tooltipIdx !== null && !e.target.classList.contains("locked-food-img")) {
         setTooltipIdx(null);
       }
     }
@@ -176,12 +153,7 @@ export default function BreakfastRoute({ isAdmin }) {
       {/* Header */}
       <div className="w-full flex flex-col sticky top-0 z-50">
         <div className="w-full z-10 bg-white">
-          <Header
-            level={30}
-            starsNeeded="0/50 stars needed"
-            currency={300}
-            stars={1604}
-          />
+          <Header level={30} starsNeeded="0/50 stars needed" currency={300} stars={1604} />
         </div>
         <div className="w-full flex items-center justify-center bg-teal-400 py-3 border-b-2 border-stone-300 z-10">
           <span
@@ -211,14 +183,9 @@ export default function BreakfastRoute({ isAdmin }) {
                 alt={`Food ${i + 1}`}
                 className={
                   "absolute -translate-x-1/2 transition-transform duration-200 ease-in-out cursor-pointer" +
-                  (isUnlocked
-                    ? " hover:scale-110 active:scale-95"
-                    : " opacity-80 locked-food-img")
+                  (isUnlocked ? " hover:scale-110 active:scale-95" : " opacity-80 locked-food-img")
                 }
-                style={{
-                  ...img.style,
-                  ...(isUnlocked ? {} : lockedStyle),
-                }}
+                style={{ ...img.style, ...(isUnlocked ? {} : lockedStyle) }}
                 onMouseEnter={(e) => {
                   if (!isUnlocked) {
                     setTooltipIdx(img.recipeId);
@@ -248,94 +215,86 @@ export default function BreakfastRoute({ isAdmin }) {
           );
         })}
 
-        {selectedRecipe && (
-          <div
-            className="fixed inset-0 z-50 flex items-center justify-center"
-            onClick={() => setSelectedRecipe(null)}
-            style={{ background: "rgba(0,0,0,0.18)" }}
-          >
-            <div
-              className="bg-gray-200 rounded-xl shadow-lg p-5 min-w-[280px] max-w-xs relative flex flex-col"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <button
-                onClick={() => setSelectedRecipe(null)}
-                className="absolute top-3 right-3 text-2xl font-bold text-black/60 hover:text-black"
-                aria-label="Close"
-              >
-                &times;
-              </button>
-              <div className="text-2xl font-bold text-center mb-0">
-                {selectedRecipe.nickname}
-              </div>
-              <div className="text-md text-center mb-3 text-gray-700 -mt-1">
-                {selectedRecipe.real_name}
-              </div>
-              <div className="flex items-center justify-center mb-1">
-                {[...Array(selectedRecipe.difficulty)].map((_, i) => (
-                  <img
-                    key={i}
-                    src="/assets/star_filled.png"
-                    alt="star"
-                    className="w-8 h-8"
-                  />
-                ))}
-                {[...Array(3 - selectedRecipe.difficulty)].map((_, i) => (
-                  <img
-                    key={i}
-                    src="/assets/star_outline.png"
-                    alt="star"
-                    className="w-8 h-8"
-                  />
-                ))}
-              </div>
-              <div className="text-center mb-3 text-gray-700">
-                {selectedRecipe.difficulty === 1
-                  ? "Beginner"
-                  : selectedRecipe.difficulty === 2
-                  ? "Intermediate"
-                  : "Advanced"}
-              </div>
-              <div className="font-bold mb-0 mt-2">Ingredients:</div>
-              <ul className="mb-4 pl-4 text-left text-[16px]">
-                {selectedRecipe.ingredients.map((item, i) => (
-                  <li key={i}>&#8226; {item}</li>
-                ))}
-              </ul>
-              <div className="font-bold mb-0 mt-2">Kitchenware:</div>
-              <ul className="mb-4 pl-4 text-left text-[16px]">
-                {selectedRecipe.kitchenware.map((item, i) => (
-                  <li key={i}>&#8226; {item}</li>
-                ))}
-              </ul>
-              <div className="mb-2 text-gray-700">
-                <span className="font-bold">Time:</span>{" "}
-                {selectedRecipe.time} min &nbsp;
-                <span className="font-bold">Servings:</span>{" "}
-                {selectedRecipe.servings}
-              </div>
-              <button
-                className="w-full rounded bg-lime-400 hover:bg-lime-500 text-black text-[17px] font-semibold py-2 mb-2 transition"
-                onClick={() =>
-                  window.open(
-                    "https://www.amazon.com/s?k=" +
-                      encodeURIComponent(selectedRecipe.ingredients.join(",")),
-                    "_blank"
-                  )
-                }
-              >
-                Buy on Amazon Fresh
-              </button>
-              <button
-                className="w-full rounded bg-orange-400 hover:bg-orange-500 text-black text-[17px] font-semibold py-2"
-                onClick={() => navigate(`/recipe/${selectedRecipe.id}`)}
-              >
-                Start cooking!
-              </button>
-            </div>
-          </div>
-        )}
+        {/* reserve space that matches BottomNav's measured docked height */}
+        <div
+          aria-hidden="true"
+          style={{ height: "var(--nav-height, 64px)" }}
+          className="w-full shrink-0"
+        />
       </div>
+
+      {/* Modal */}
+      {selectedRecipe && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center"
+          onClick={() => setSelectedRecipe(null)}
+          style={{ background: "rgba(0,0,0,0.18)" }}
+        >
+          <div
+            className="bg-gray-200 rounded-xl shadow-lg p-5 min-w-[280px] max-w-xs relative flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setSelectedRecipe(null)}
+              className="absolute top-3 right-3 text-2xl font-bold text-black/60 hover:text-black"
+              aria-label="Close"
+            >
+              &times;
+            </button>
+            <div className="text-2xl font-bold text-center mb-0">{selectedRecipe.nickname}</div>
+            <div className="text-md text-center mb-3 text-gray-700 -mt-1">{selectedRecipe.real_name}</div>
+            <div className="flex items-center justify-center mb-1">
+              {[...Array(selectedRecipe.difficulty)].map((_, i) => (
+                <img key={i} src="/assets/star_filled.png" alt="star" className="w-8 h-8" />
+              ))}
+              {[...Array(3 - selectedRecipe.difficulty)].map((_, i) => (
+                <img key={i} src="/assets/star_outline.png" alt="star" className="w-8 h-8" />
+              ))}
+            </div>
+            <div className="text-center mb-3 text-gray-700">
+              {selectedRecipe.difficulty === 1
+                ? "Beginner"
+                : selectedRecipe.difficulty === 2
+                ? "Intermediate"
+                : "Advanced"}
+            </div>
+            <div className="font-bold mb-0 mt-2">Ingredients:</div>
+            <ul className="mb-4 pl-4 text-left text-[16px]">
+              {selectedRecipe.ingredients.map((item, i) => (
+                <li key={i}>&#8226; {item}</li>
+              ))}
+            </ul>
+            <div className="font-bold mb-0 mt-2">Kitchenware:</div>
+            <ul className="mb-4 pl-4 text-left text-[16px]">
+              {selectedRecipe.kitchenware.map((item, i) => (
+                <li key={i}>&#8226; {item}</li>
+              ))}
+            </ul>
+            <div className="mb-2 text-gray-700">
+              <span className="font-bold">Time:</span> {selectedRecipe.time} min &nbsp;
+              <span className="font-bold">Servings:</span> {selectedRecipe.servings}
+            </div>
+            <button
+              className="w-full rounded bg-lime-400 hover:bg-lime-500 text-black text-[17px] font-semibold py-2 mb-2 transition"
+              onClick={() =>
+                window.open(
+                  "https://www.amazon.com/s?k=" +
+                    encodeURIComponent(selectedRecipe.ingredients.join(",")),
+                  "_blank"
+                )
+              }
+            >
+              Buy on Amazon Fresh
+            </button>
+            <button
+              className="w-full rounded bg-orange-400 hover:bg-orange-500 text-black text-[17px] font-semibold py-2"
+              onClick={() => navigate(`/recipe/${selectedRecipe.id}`)}
+            >
+              Start cooking!
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
