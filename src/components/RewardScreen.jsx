@@ -7,23 +7,16 @@ export default function RewardScreen() {
 
   // Tweak these to size/position the spinning star
   const STAR_SIZE = 600; // px
-  const STAR_TOP  = 200; // px from the top
+  const STAR_TOP  = 120; // px from the top
 
   return (
     <div
       className="max-w-[480px] mx-auto bg-gradient-to-b from-[#4FB9B0] to-[#87CEEB] relative overflow-hidden flex flex-col justify-center items-center"
       style={{ height: "calc(100dvh - var(--nav-reserve, 0px))" }}
     >
-      {/* Global keyframes used by the star */}
       <style>{`
-        @keyframes reward-spin {
-          from { transform: rotate(0deg); }
-          to   { transform: rotate(360deg); }
-        }
-        @keyframes reward-bob {
-          0%,100% { transform: translateX(-50%) translateY(-6px); }
-          50%     { transform: translateX(-50%) translateY(6px); }
-        }
+        @keyframes reward-spin { from {transform: rotate(0deg);} to {transform: rotate(360deg);} }
+        @keyframes reward-bob  { 0%,100% { transform: translateX(-50%) translateY(-6px);} 50% { transform: translateX(-50%) translateY(6px);} }
         @media (prefers-reduced-motion: reduce) {
           .reward-spin { animation: none !important; }
           .reward-bob  { animation: none !important; }
@@ -59,7 +52,8 @@ export default function RewardScreen() {
 
       {/* Foreground content */}
       <div className="relative z-10 flex flex-col items-center justify-center h-full px-6">
-        <div className="mb-8">
+        {/* ↓ tightened gap: mb-8 -> mb-2 */}
+        <div className="mb-2">
           <img
             src="/assets/reward/whiskers.png"
             alt="Wiskers the Wisk mascot"
@@ -67,9 +61,14 @@ export default function RewardScreen() {
           />
         </div>
 
-        <div className="text-center mb-12">
-          <h1 className="text-teal-700 font-nunito text-2xl font-bold mb-2">Wiskers the Wisk</h1>
-          <h2 className="text-black font-nunito text-3xl font-extrabold mb-4">Quest complete!</h2>
+        {/* ↓ optionally tighten headline stack a bit */}
+        <div className="text-center mb-10">
+          <h1 className="text-teal-700 font-nunito text-2xl font-bold mb-1">
+            Wiskers the Wisk
+          </h1>
+          <h2 className="text-black font-nunito text-3xl font-extrabold mb-3">
+            Quest complete!
+          </h2>
           <p className="text-black font-nunito text-lg leading-relaxed max-w-sm">
             Here's a friend to add to your crew.
           </p>
