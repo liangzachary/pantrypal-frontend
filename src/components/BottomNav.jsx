@@ -11,12 +11,14 @@ export default function BottomNav() {
   const barRef = useRef(null);
   const [barHeight, setBarHeight] = useState(64);
 
+  // how much to lift icons when docked
+  const LIFT_DOCKED_PX = 8;
+
   // --- simple modal state ---
   const [modalOpen, setModalOpen] = useState(false);
   const openModal = () => setModalOpen(true);
   const closeModal = () => setModalOpen(false);
 
-  // Close modal on Esc
   useEffect(() => {
     if (!modalOpen) return;
     const onKey = (e) => e.key === "Escape" && closeModal();
@@ -24,28 +26,17 @@ export default function BottomNav() {
     return () => window.removeEventListener("keydown", onKey);
   }, [modalOpen]);
 
-  // Measure the bar height
   useEffect(() => {
     if (!barRef.current) return;
     const el = barRef.current;
-
-    const update = () => {
-      const h = Math.ceil(el.getBoundingClientRect().height || 64);
-      setBarHeight(h);
-    };
-
+    const update = () => setBarHeight(Math.ceil(el.getBoundingClientRect().height || 64));
     update();
     const ro = new ResizeObserver(update);
     ro.observe(el);
-
     window.addEventListener("resize", update);
-    return () => {
-      ro.disconnect();
-      window.removeEventListener("resize", update);
-    };
+    return () => { ro.disconnect(); window.removeEventListener("resize", update); };
   }, []);
 
-  // Always reserve space for the bar
   useEffect(() => {
     const reserve = `calc(${barHeight}px + env(safe-area-inset-bottom, 0px))`;
     document.documentElement.style.setProperty("--nav-reserve", reserve);
@@ -56,25 +47,17 @@ export default function BottomNav() {
     };
   }, [barHeight]);
 
-  // Detect scrollability + toggle floating
   useEffect(() => {
     const getDelta = () =>
-      document.documentElement.scrollHeight -
-      document.documentElement.clientHeight;
+      document.documentElement.scrollHeight - document.documentElement.clientHeight;
 
     const checkScrollable = () => setIsScrollable(getDelta() > 16);
 
     const handleScroll = () => {
-      if (!isScrollable) {
-        setIsFloating(false);
-        return;
-      }
+      if (!isScrollable) { setIsFloating(false); return; }
       const y = window.scrollY;
       const nearTop = y < 24;
-      const nearBottom =
-        y + window.innerHeight >
-        document.documentElement.scrollHeight - 24;
-
+      const nearBottom = y + window.innerHeight > document.documentElement.scrollHeight - 24;
       setIsFloating(!nearTop && !nearBottom);
     };
 
@@ -87,13 +70,11 @@ export default function BottomNav() {
     };
   }, [isScrollable]);
 
-  // Reset float on route change
   useEffect(() => {
     setIsFloating(false);
     const rAF = requestAnimationFrame(() => {
       const delta =
-        document.documentElement.scrollHeight -
-        document.documentElement.clientHeight;
+        document.documentElement.scrollHeight - document.documentElement.clientHeight;
       setIsScrollable(delta > 16);
     });
     return () => cancelAnimationFrame(rAF);
@@ -114,7 +95,15 @@ export default function BottomNav() {
               ? "bg-amber-300 rounded-2xl shadow-lg py-4 px-6 border-2 border-orange-400"
               : "bg-amber-300 rounded-none shadow-none py-5 px-0 border-t-2 border-orange-400 border-b-0")
           }
-          style={!isFloating ? { paddingBottom: "env(safe-area-inset-bottom, 0px)" } : undefined}
+          /* 👇 lift icons a bit when docked; also keep safe-area padding */
+          style={
+            !isFloating
+              ? {
+                  paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 6px)",
+                  transform: `translateY(-${LIFT_DOCKED_PX}px)`,
+                }
+              : undefined
+          }
         >
           <BottomNavNode
             src="/assets/home.png"
@@ -125,19 +114,18 @@ export default function BottomNav() {
           <BottomNavNode
             src="/assets/profile.png"
             alt="Profile"
-            onClick={openModal} // not implemented -> modal
+            onClick={openModal}
             className="w-8 sm:w-10 aspect-square"
           />
           <BottomNavNode
             src="/assets/leaderboard.png"
             alt="Leaderboard"
-            onClick={openModal} // not implemented -> modal
+            onClick={openModal}
             className="aspect-[0.97] w-[26px] sm:w-[33px]"
           />
         </div>
       </div>
 
-      {/* Modal */}
       {modalOpen && (
         <div
           className="fixed inset-0 z-[9999] flex items-center justify-center"
