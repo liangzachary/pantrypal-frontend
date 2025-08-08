@@ -31,6 +31,28 @@ const RecipeDetail = () => {
     return [];
   }
 
+  // Inject CSS for pager buttons once
+  useEffect(() => {
+    const id = 'pager-btn-css';
+    if (!document.getElementById(id)) {
+      const style = document.createElement('style');
+      style.id = id;
+      style.textContent = `
+        .step-pager-btn {
+          outline: none;
+          -webkit-tap-highlight-color: transparent;
+        }
+        .step-pager-btn:focus { outline: none; }
+        /* Show focus when navigating with keyboard only */
+        .step-pager-btn:focus-visible {
+          outline: 2px solid #1a1a1a;
+          outline-offset: 2px;
+        }
+      `;
+      document.head.appendChild(style);
+    }
+  }, []);
+
   useEffect(() => {
     const fetchRecipe = async () => {
       try {
@@ -233,6 +255,7 @@ const RecipeDetail = () => {
             </span>
             <span>
               <button
+                type="button"
                 onClick={() => adjustServings(1)}
                 style={{
                   background: '#FE9A1C',
@@ -249,6 +272,7 @@ const RecipeDetail = () => {
                 +
               </button>
               <button
+                type="button"
                 onClick={() => adjustServings(-1)}
                 style={{
                   background: '#FE9A1C',
@@ -276,6 +300,7 @@ const RecipeDetail = () => {
             }}
           >
             <button
+              type="button"
               onClick={() => setActiveTab('ingredients')}
               style={{
                 border: '2px solid #4FB9AF',
@@ -291,6 +316,7 @@ const RecipeDetail = () => {
               Ingredients
             </button>
             <button
+              type="button"
               onClick={() => setActiveTab('instructions')}
               style={{
                 border: '2px solid #4FB9AF',
@@ -351,6 +377,8 @@ const RecipeDetail = () => {
               {totalPages > 1 && (
                 <>
                   <button
+                    type="button"
+                    className="step-pager-btn"
                     onClick={() => setStepPage(p => Math.max(0, p - 1))}
                     disabled={stepPage === 0}
                     aria-label="Previous steps"
@@ -372,14 +400,13 @@ const RecipeDetail = () => {
                     }}
                   >
                     <img
-                      src="/assets/icons/arrow-left.png"   // <-- your arrow PNG
-                      alt=""                                    // decorative
+                      src="/assets/icons/arrow-left.png" /* decorative */
+                      alt=""
                       aria-hidden="true"
                       draggable={false}
                       style={{
                         width: 24,
                         height: 24,
-                        // transform: 'scaleX(-1)',               // flip for "previous"
                         pointerEvents: 'none',
                         filter: stepPage === 0 ? 'grayscale(1) opacity(0.7)' : 'none',
                       }}
@@ -387,6 +414,8 @@ const RecipeDetail = () => {
                   </button>
 
                   <button
+                    type="button"
+                    className="step-pager-btn"
                     onClick={() => setStepPage(p => Math.min(p + 1, totalPages - 1))}
                     disabled={stepPage >= totalPages - 1}
                     aria-label="Next steps"
