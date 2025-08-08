@@ -19,25 +19,22 @@ export default function App() {
         {admin ? "User View" : "Admin"}
       </button>
 
-      {/* Page content with padding so BottomNav never overlaps */}
-      <div className="pb-20">
+      {/* Reserve space dynamically: BottomNav sets --nav-reserve */}
+      <div style={{ paddingBottom: "var(--nav-reserve, 0px)" }}>
         <Routes>
           {admin ? (
             <Route path="*" element={<AddRecipe isAdmin={admin} />} />
           ) : (
             <>
               <Route path="/" element={<HomeScreen />} />
-              <Route
-                path="/breakfast"
-                element={<BreakfastRoute isAdmin={admin} />}
-              />
+              <Route path="/breakfast" element={<BreakfastRoute isAdmin={admin} />} />
               <Route path="/recipe/:id" element={<RecipeDetail />} />
             </>
           )}
         </Routes>
       </div>
 
-      {/* Always visible bottom nav in user mode */}
+      {/* Universal bottom nav in user mode */}
       {!admin && <BottomNav />}
     </Router>
   );
