@@ -217,8 +217,6 @@ export default function BreakfastRoute({ isAdmin }) {
         </div>
       </div>
 
-      {/* No local spacer here – App.jsx handles padding with --nav-reserve */}
-
       {/* Modal */}
       {selectedRecipe && (
         <div
@@ -237,7 +235,67 @@ export default function BreakfastRoute({ isAdmin }) {
             >
               &times;
             </button>
-            {/* ...modal content unchanged... */}
+
+            <div className="text-2xl font-bold text-center mb-0">
+              {selectedRecipe.nickname}
+            </div>
+            <div className="text-md text-center mb-3 text-gray-700 -mt-1">
+              {selectedRecipe.real_name}
+            </div>
+
+            <div className="flex items-center justify-center mb-1">
+              {[...Array(selectedRecipe.difficulty)].map((_, i) => (
+                <img key={i} src="/assets/star_filled.png" alt="star" className="w-8 h-8" />
+              ))}
+              {[...Array(3 - selectedRecipe.difficulty)].map((_, i) => (
+                <img key={i} src="/assets/star_outline.png" alt="star" className="w-8 h-8" />
+              ))}
+            </div>
+            <div className="text-center mb-3 text-gray-700">
+              {selectedRecipe.difficulty === 1
+                ? "Beginner"
+                : selectedRecipe.difficulty === 2
+                ? "Intermediate"
+                : "Advanced"}
+            </div>
+
+            <div className="font-bold mb-0 mt-2">Ingredients:</div>
+            <ul className="mb-4 pl-4 text-left text-[16px]">
+              {selectedRecipe.ingredients.map((item, i) => (
+                <li key={i}>&#8226; {item}</li>
+              ))}
+            </ul>
+
+            <div className="font-bold mb-0 mt-2">Kitchenware:</div>
+            <ul className="mb-4 pl-4 text-left text-[16px]">
+              {selectedRecipe.kitchenware.map((item, i) => (
+                <li key={i}>&#8226; {item}</li>
+              ))}
+            </ul>
+
+            <div className="mb-2 text-gray-700">
+              <span className="font-bold">Time:</span> {selectedRecipe.time} min &nbsp;
+              <span className="font-bold">Servings:</span> {selectedRecipe.servings}
+            </div>
+
+            <button
+              className="w-full rounded bg-lime-400 hover:bg-lime-500 text-black text-[17px] font-semibold py-2 mb-2 transition"
+              onClick={() =>
+                window.open(
+                  "https://www.amazon.com/s?k=" +
+                    encodeURIComponent(selectedRecipe.ingredients.join(",")),
+                  "_blank"
+                )
+              }
+            >
+              Buy on Amazon Fresh
+            </button>
+            <button
+              className="w-full rounded bg-orange-400 hover:bg-orange-500 text-black text-[17px] font-semibold py-2"
+              onClick={() => navigate(`/recipe/${selectedRecipe.id}`)}
+            >
+              Start cooking!
+            </button>
           </div>
         </div>
       )}
