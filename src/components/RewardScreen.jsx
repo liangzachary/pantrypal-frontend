@@ -3,7 +3,16 @@ import { useNavigate } from "react-router-dom";
 
 export default function RewardScreen() {
   const navigate = useNavigate();
-  const handleContinue = () => navigate("/breakfast");
+
+  // localStorage key for "highest unlocked index" (0-based)
+  const PROGRESS_KEY = "breakfastUnlocked";
+
+  const handleContinue = () => {
+    const cur = parseInt(localStorage.getItem(PROGRESS_KEY) || "0", 10);
+    const next = Number.isFinite(cur) ? cur + 1 : 1; // unlock next node
+    localStorage.setItem(PROGRESS_KEY, String(next));
+    navigate("/breakfast");
+  };
 
   const STAR_SIZE = 600; // px
   const STAR_TOP  = 120; // px from the top

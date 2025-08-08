@@ -99,7 +99,18 @@ export default function BreakfastRoute({ isAdmin }) {
     { src: "/assets/food/breakfast10.png", style: { top: "2.5%",  left: "70%", width: 160, height: 160 }, recipeId: 11 },
   ];
 
-  const unlocked = isAdmin ? foodImages.map((f) => f.recipeId) : [foodImages[0].recipeId];
+  // --- UNLOCK LOGIC ---
+  // highest unlocked index (0 means only first node unlocked)
+  const rawIndex = parseInt(localStorage.getItem("breakfastUnlocked") || "0", 10);
+  const unlockedIndex = Number.isFinite(rawIndex) ? rawIndex : 0;
+
+  // for non-admins, allow up to unlockedIndex (inclusive); clamp to array length
+  const unlocked = isAdmin
+    ? foodImages.map((f) => f.recipeId)
+    : foodImages
+        .slice(0, Math.min(unlockedIndex + 1, foodImages.length))
+        .map((f) => f.recipeId);
+  // ---------------------
 
   useEffect(() => {
     fetch("https://spatch.onrender.com/recipes/")
