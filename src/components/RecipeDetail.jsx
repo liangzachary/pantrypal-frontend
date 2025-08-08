@@ -11,6 +11,10 @@ const RecipeDetail = () => {
   const [activeTab, setActiveTab] = useState('instructions');
   const [servings, setServings] = useState(1);
 
+  // NEW: paged steps state
+  const [stepPage, setStepPage] = useState(0);
+  const stepsPerPage = 3;
+
   const fallbackImg =
     'https://cdn.apartmenttherapy.info/image/upload/f_jpg,q_auto:eco,c_fill,g_auto,w_1500,ar_1:1/k%2F2023-07-chili-crisp-fried-eggs%2FChili-Crisp-Fried-Eggs_153';
 
@@ -42,6 +46,7 @@ const RecipeDetail = () => {
         };
         setRecipe(fixed);
         setServings(fixed.servings || 1);
+        setStepPage(0); // reset page when recipe changes
       } catch (err) {
         setError(err.message);
       } finally {
@@ -50,6 +55,11 @@ const RecipeDetail = () => {
     };
     if (id) fetchRecipe();
   }, [id]);
+
+  // reset to first page when returning to the tab
+  useEffect(() => {
+    if (activeTab === 'instructions') setStepPage(0);
+  }, [activeTab]);
 
   const adjustServings = (increment) => {
     setServings((prev) => Math.max(1, prev + increment));
@@ -106,6 +116,10 @@ const RecipeDetail = () => {
     );
   }
 
+  const totalPages = Math.max(1, Math.ceil((recipe.steps?.length || 0) / stepsPerPage));
+  const start = stepPage * stepsPerPage;
+  const visibleSteps = (recipe.steps || []).slice(start, start + stepsPerPage);
+
   return (
     <div
       style={{
@@ -113,8 +127,8 @@ const RecipeDetail = () => {
         width: "100%",
         margin: "0 auto",
         background: "transparent",
-        minHeight: "100dvh", // uses dynamic mobile viewport if supported
-        height: `${PHONE_HEIGHT}px`, // fallback for most desktop browsers, "phone length"
+        minHeight: "100dvh",
+        height: `${PHONE_HEIGHT}px`,
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
@@ -134,14 +148,13 @@ const RecipeDetail = () => {
           backgroundPosition: "center",
           borderTopLeftRadius: 40,
           borderTopRightRadius: 40,
-          // marginTop: 32,
           boxShadow: "0 8px 32px #0002",
           position: "relative",
           zIndex: 1,
         }}
       />
 
-      {/* Main card content & mascot bubble as flex column */}
+      {/* Main card content & mascot bubble */}
       <div
         style={{
           background: "#EDD7B3",
@@ -151,13 +164,13 @@ const RecipeDetail = () => {
           marginTop: -25,
           position: "relative",
           zIndex: 2,
-          height: "100%",         // ensures card fills remaining phone space
+          height: "100%",
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
         }}
       >
-        {/* Scrollable main content (takes up all space except mascot area) */}
+        {/* Scrollable main content */}
         <div
           style={{
             width: "100%",
@@ -166,7 +179,7 @@ const RecipeDetail = () => {
             padding: "32px 16px 0 16px",
           }}
         >
-          {/* Recipe title */}
+          {/* Title */}
           <div
             style={{
               color: '#000',
@@ -191,7 +204,8 @@ const RecipeDetail = () => {
           >
             {recipe.real_name || 'Chilli oil fried egg'}
           </div>
-          {/* Time and servings */}
+
+          {/* Time/Servings */}
           <div
             style={{
               display: 'flex',
@@ -205,12 +219,7 @@ const RecipeDetail = () => {
               <img
                 src="https://api.builder.io/api/v1/image/assets/TEMP/96c8ccf032344656716aafa24d2a0d786adf181b?width=52"
                 alt="clock"
-                style={{
-                  width: 24,
-                  verticalAlign: 'middle',
-                  marginRight: 4,
-                  marginTop: -2,
-                }}
+                style={{ width: 24, verticalAlign: 'middle', marginRight: 4, marginTop: -2 }}
               />
               {recipe.time || 10} mins
             </span>
@@ -218,12 +227,7 @@ const RecipeDetail = () => {
               <img
                 src="https://api.builder.io/api/v1/image/assets/TEMP/791b59fa3cb38bee2d863c91c102b914635c0703?width=120"
                 alt="people"
-                style={{
-                  width: 32,
-                  verticalAlign: 'middle',
-                  marginRight: 4,
-                  marginTop: -2,
-                }}
+                style={{ width: 32, verticalAlign: 'middle', marginRight: 4, marginTop: -2 }}
               />
               {servings} serving{servings !== 1 ? 's' : ''}
             </span>
@@ -302,6 +306,7 @@ const RecipeDetail = () => {
               Instructions
             </button>
           </div>
+
           {/* Content */}
           {activeTab === 'ingredients' ? (
             <div
@@ -327,17 +332,105 @@ const RecipeDetail = () => {
               </ul>
             </div>
           ) : (
-            <div style={{ fontSize: 18, marginBottom: 16 }}>
-              {recipe.steps.map((step, i) => (
-                <div key={i} style={{ marginBottom: 12 }}>
-                  <b>{i + 1}.</b> {step}
-                </div>
-              ))}
+            // INSTRUCTIONS with paging (3 per page)
+            <div style={{ position: 'relative', marginBottom: 16 }}>
+              {/* Steps */}
+              <div style={{ fontSize: 18 }}>
+                {visibleSteps.length === 0 ? (
+                  <div>No steps yet.</div>
+                ) : (
+                  visibleSteps.map((step, i) => (
+                    <div key={start + i} style={{ marginBottom: 12 }}>
+                      <b>{start + i + 1}.</b> {step}
+                    </div>
+                  ))
+                )}
+              </div>
+
+              {/* Pager controls */}
+              {totalPages > 1 && (
+                <>
+                  <button
+                    onClick={() => setStepPage(p => Math.max(0, p - 1))}
+                    disabled={stepPage === 0}
+                    aria-label="Previous steps"
+                    style={{
+                      position: 'absolute',
+                      left: -6,
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      width: 44,
+                      height: 44,
+                      borderRadius: 12,
+                      border: 'none',
+                      background: '#4FB9AF',
+                      boxShadow: '0 4px 12px #0002',
+                      opacity: stepPage === 0 ? 0.45 : 1,
+                      cursor: stepPage === 0 ? 'default' : 'pointer',
+                      display: 'grid',
+                      placeItems: 'center',
+                    }}
+                  >
+                    <img
+                      src="/assets/icons/arrow-triangle.png"   // <-- your arrow PNG
+                      alt=""                                    // decorative
+                      aria-hidden="true"
+                      draggable={false}
+                      style={{
+                        width: 24,
+                        height: 24,
+                        transform: 'scaleX(-1)',               // flip for "previous"
+                        pointerEvents: 'none',
+                        filter: stepPage === 0 ? 'grayscale(1) opacity(0.7)' : 'none',
+                      }}
+                    />
+                  </button>
+
+                  <button
+                    onClick={() => setStepPage(p => Math.min(p + 1, totalPages - 1))}
+                    disabled={stepPage >= totalPages - 1}
+                    aria-label="Next steps"
+                    style={{
+                      position: 'absolute',
+                      right: -6,
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      width: 44,
+                      height: 44,
+                      borderRadius: 12,
+                      border: 'none',
+                      background: '#4FB9AF',
+                      boxShadow: '0 4px 12px #0002',
+                      opacity: stepPage >= totalPages - 1 ? 0.45 : 1,
+                      cursor: stepPage >= totalPages - 1 ? 'default' : 'pointer',
+                      display: 'grid',
+                      placeItems: 'center',
+                    }}
+                  >
+                    <img
+                      src="/assets/icons/arrow-triangle.png"
+                      alt=""
+                      aria-hidden="true"
+                      draggable={false}
+                      style={{
+                        width: 24,
+                        height: 24,
+                        pointerEvents: 'none',
+                        filter: stepPage >= totalPages - 1 ? 'grayscale(1) opacity(0.7)' : 'none',
+                      }}
+                    />
+                  </button>
+
+                  <div style={{ textAlign: 'center', marginTop: 8, fontWeight: 700 }}>
+                    {stepPage + 1} / {totalPages}
+                  </div>
+                </>
+              )}
             </div>
           )}
         </div>
 
-        {/* Mascot & chat bubble always at bottom */}
+        {/* Mascot & chat bubble */}
         <div
           style={{
             width: "100%",
@@ -371,15 +464,8 @@ const RecipeDetail = () => {
               position: "relative",
             }}
           >
-            {/* Bubble tail */}
             <svg
-              style={{
-                position: "absolute",
-                left: "-24px",
-                bottom: 8,
-                width: 32,
-                height: 28,
-              }}
+              style={{ position: "absolute", left: "-24px", bottom: 8, width: 32, height: 28 }}
               width="23"
               height="29"
               viewBox="0 0 23 29"
