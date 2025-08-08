@@ -89,7 +89,7 @@ export default function HomeScreen() {
         </div>
 
         {/* Lunch Quests */}
-        <div className="absolute left={[202]} top-[180px] w-[152px] h-[188px]">
+        <div className="absolute left=[202] top-[180px] w-[152px] h-[188px]">
           <button
             onClick={() => handlePlaceholderClick("Lunch")}
             className="w-full h-full rounded-[20px] bg-[#F89921] shadow-[4px_4px_4px_0_rgba(0,0,0,0.25)] flex flex-col items-center justify-center cursor-pointer hover:scale-105 active:scale-95 transition-transform duration-200"
