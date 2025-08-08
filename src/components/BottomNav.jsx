@@ -9,9 +9,22 @@ export default function BottomNav() {
   const [isFloating, setIsFloating] = useState(false);
   const [isScrollable, setIsScrollable] = useState(false);
   const barRef = useRef(null);
-  const [barHeight, setBarHeight] = useState(64); // measured live
+  const [barHeight, setBarHeight] = useState(64);
 
-  // Measure the actual rendered height of the bar (both docked & floating)
+  // --- simple modal state ---
+  const [modalOpen, setModalOpen] = useState(false);
+  const openModal = () => setModalOpen(true);
+  const closeModal = () => setModalOpen(false);
+
+  // Close modal on Esc
+  useEffect(() => {
+    if (!modalOpen) return;
+    const onKey = (e) => e.key === "Escape" && closeModal();
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [modalOpen]);
+
+  // Measure the bar height
   useEffect(() => {
     if (!barRef.current) return;
     const el = barRef.current;
@@ -32,11 +45,10 @@ export default function BottomNav() {
     };
   }, []);
 
-  // Always reserve space for the bar (prevents bottom “bounce”)
+  // Always reserve space for the bar
   useEffect(() => {
     const reserve = `calc(${barHeight}px + env(safe-area-inset-bottom, 0px))`;
     document.documentElement.style.setProperty("--nav-reserve", reserve);
-    // If you used --nav-height anywhere, mirror it too:
     document.documentElement.style.setProperty("--nav-height", `${barHeight}px`);
     return () => {
       document.documentElement.style.setProperty("--nav-reserve", "0px");
@@ -44,7 +56,7 @@ export default function BottomNav() {
     };
   }, [barHeight]);
 
-  // Detect scrollability + toggle floating (purely visual now)
+  // Detect scrollability + toggle floating
   useEffect(() => {
     const getDelta = () =>
       document.documentElement.scrollHeight -
@@ -75,7 +87,7 @@ export default function BottomNav() {
     };
   }, [isScrollable]);
 
-  // Reset float on route change & re-check scrollability
+  // Reset float on route change
   useEffect(() => {
     setIsFloating(false);
     const rAF = requestAnimationFrame(() => {
@@ -88,40 +100,76 @@ export default function BottomNav() {
   }, [location.pathname]);
 
   return (
-    <div
-      className={`fixed left-1/2 -translate-x-1/2 z-40 w-full max-w-[480px] transition-all duration-300
-        ${isFloating ? "bottom-3" : "bottom-0"}
-      `}
-    >
+    <>
       <div
-        ref={barRef}
-        className={
-          `flex justify-around items-center transition-all duration-300 w-full ` +
-          (isFloating
-            ? "bg-amber-300 rounded-2xl shadow-lg py-4 px-6 border-2 border-orange-400"
-            : "bg-amber-300 rounded-none shadow-none py-5 px-0 border-t-2 border-orange-400 border-b-0")
-        }
-        style={!isFloating ? { paddingBottom: "env(safe-area-inset-bottom, 0px)" } : undefined}
+        className={`fixed left-1/2 -translate-x-1/2 z-40 w-full max-w-[480px] transition-all duration-300
+          ${isFloating ? "bottom-3" : "bottom-0"}
+        `}
       >
-        <BottomNavNode
-          src="/assets/home.png"
-          alt="Home"
-          onClick={() => navigate("/")}
-          className="aspect-[0.97] w-[24px] sm:w-[31px]"
-        />
-        <BottomNavNode
-          src="/assets/profile.png"
-          alt="Profile"
-          onClick={() => navigate("/profile")}
-          className="w-8 sm:w-10 aspect-square"
-        />
-        <BottomNavNode
-          src="/assets/leaderboard.png"
-          alt="Leaderboard"
-          onClick={() => navigate("/leaderboard")}
-          className="aspect-[0.97] w-[26px] sm:w-[33px]"
-        />
+        <div
+          ref={barRef}
+          className={
+            `flex justify-around items-center transition-all duration-300 w-full ` +
+            (isFloating
+              ? "bg-amber-300 rounded-2xl shadow-lg py-4 px-6 border-2 border-orange-400"
+              : "bg-amber-300 rounded-none shadow-none py-5 px-0 border-t-2 border-orange-400 border-b-0")
+          }
+          style={!isFloating ? { paddingBottom: "env(safe-area-inset-bottom, 0px)" } : undefined}
+        >
+          <BottomNavNode
+            src="/assets/home.png"
+            alt="Home"
+            onClick={() => navigate("/")}
+            className="aspect-[0.97] w-[24px] sm:w-[31px]"
+          />
+          <BottomNavNode
+            src="/assets/profile.png"
+            alt="Profile"
+            onClick={openModal} // not implemented -> modal
+            className="w-8 sm:w-10 aspect-square"
+          />
+          <BottomNavNode
+            src="/assets/leaderboard.png"
+            alt="Leaderboard"
+            onClick={openModal} // not implemented -> modal
+            className="aspect-[0.97] w-[26px] sm:w-[33px]"
+          />
+        </div>
       </div>
-    </div>
+
+      {/* Modal */}
+      {modalOpen && (
+        <div
+          className="fixed inset-0 z-[9999] flex items-center justify-center"
+          style={{ background: "rgba(0,0,0,0.35)" }}
+          onClick={closeModal}
+          role="dialog"
+          aria-modal="true"
+        >
+          <div
+            className="bg-white rounded-2xl shadow-xl px-6 py-5 w-[280px] text-center relative"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              onClick={closeModal}
+              aria-label="Close"
+              className="absolute right-3 top-2 text-2xl leading-none text-black/60 hover:text-black"
+            >
+              &times;
+            </button>
+            <div className="text-[18px] font-extrabold mb-2">Still baking</div>
+            <div className="text-[16px] mb-4 text-black/70">…almost done!</div>
+            <button
+              type="button"
+              onClick={closeModal}
+              className="px-4 py-2 rounded-lg bg-[#F89921] font-bold"
+            >
+              OK
+            </button>
+          </div>
+        </div>
+      )}
+    </>
   );
 }

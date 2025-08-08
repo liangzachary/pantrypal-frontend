@@ -1,9 +1,51 @@
-import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import React, { useState, useEffect, useMemo } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 
-const PHONE_HEIGHT = 812; // iPhone 13/14 Pro, tweak as you wish
+const PHONE_HEIGHT = 812; // iPhone 13/14 Pro
+const ARROW_SIZE = 32;    // px (your arrow image size)
+const ARROW_OFFSET = 6;   // px (how far the button sits outside the container)
+const ARROW_PAD = ARROW_SIZE - ARROW_OFFSET + 30; // extra breathing room for text (~56px)
+
+/* ---- helpers for servings scaling ---- */
+const FRACTIONS = { '¼': 1/4, '½': 1/2, '¾': 3/4, '⅓': 1/3, '⅔': 2/3, '⅕': 1/5, '⅖': 2/5, '⅗': 3/5, '⅘': 4/5, '⅙': 1/6, '⅚': 5/6, '⅛': 1/8, '⅜': 3/8, '⅝': 5/8, '⅞': 7/8 };
+
+function parseQuantity(input) {
+  const s = input.trim();
+  if (/^(a|an)\b/i.test(s)) return { qty: 1, rest: s.replace(/^(a|an)\b/i, '').trimStart() };
+  let m = s.match(/^(\d+)\s+(\d+)\/(\d+)\b(.*)$/);
+  if (m) return { qty: +m[1] + (+m[2]/+m[3]), rest: m[4].trimStart() };
+  m = s.match(/^(\d+)\/(\d+)\b(.*)$/);
+  if (m) return { qty: +m[1]/+m[2], rest: m[3].trimStart() };
+  if (FRACTIONS[s[0]]) return { qty: FRACTIONS[s[0]], rest: s.slice(1).trimStart() };
+  m = s.match(/^(\d+(?:\.\d+)?)\b(.*)$/);
+  if (m) return { qty: parseFloat(m[1]), rest: m[2].trimStart() };
+  return null;
+}
+
+function formatQuantity(q) {
+  if (!isFinite(q) || q <= 0) return '0';
+  const snapped = Math.round(q * 8) / 8;
+  const whole = Math.floor(snapped + 1e-9);
+  const frac = snapped - whole;
+  const map = { [1/8]:'⅛',[1/4]:'¼',[3/8]:'⅜',[1/2]:'½',[5/8]:'⅝',[3/4]:'¾',[7/8]:'⅞' };
+  for (const k of Object.keys(map).map(Number)) {
+    if (Math.abs(frac - k) < 1e-6) return whole ? `${whole} ${map[k]}` : map[k];
+  }
+  const rounded = Math.round(snapped * 100) / 100;
+  return Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(2);
+}
+
+function scaleIngredient(line, factor) {
+  const parsed = parseQuantity(line);
+  if (!parsed) return line;
+  const qtyStr = formatQuantity(parsed.qty * factor);
+  if (qtyStr === '0') return line;
+  return `${qtyStr} ${parsed.rest}`.replace(/\s+/g, ' ').trim();
+}
+/* ------------------------------------- */
 
 const RecipeDetail = () => {
+  const navigate = useNavigate();
   const { id } = useParams();
   const [recipe, setRecipe] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -11,7 +53,7 @@ const RecipeDetail = () => {
   const [activeTab, setActiveTab] = useState('instructions');
   const [servings, setServings] = useState(1);
 
-  // NEW: paged steps state
+  // paged steps
   const [stepPage, setStepPage] = useState(0);
   const stepsPerPage = 3;
 
@@ -31,7 +73,7 @@ const RecipeDetail = () => {
     return [];
   }
 
-  // Inject CSS for pager buttons once (no blue highlight, no default styles)
+  // Inject CSS for pager buttons once (no blue highlight)
   useEffect(() => {
     const id = 'pager-btn-css';
     if (!document.getElementById(id)) {
@@ -70,7 +112,7 @@ const RecipeDetail = () => {
         };
         setRecipe(fixed);
         setServings(fixed.servings || 1);
-        setStepPage(0); // reset page when recipe changes
+        setStepPage(0);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -80,7 +122,6 @@ const RecipeDetail = () => {
     if (id) fetchRecipe();
   }, [id]);
 
-  // reset to first page when returning to the tab
   useEffect(() => {
     if (activeTab === 'instructions') setStepPage(0);
   }, [activeTab]);
@@ -89,18 +130,17 @@ const RecipeDetail = () => {
     setServings((prev) => Math.max(1, prev + increment));
   };
 
+  // scale ingredients for display
+  const scaledIngredients = useMemo(() => {
+    const orig = Math.max(1, Number(recipe?.servings) || 1);
+    const factor = (servings || 1) / orig;
+    const list = recipe?.ingredients || [];
+    return list.map((line) => scaleIngredient(line, factor));
+  }, [recipe?.ingredients, recipe?.servings, servings]);
+
   if (loading) {
     return (
-      <div
-        style={{
-          width: '100vw',
-          height: '100vh',
-          background: '#EDD7B3',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-      >
+      <div style={{ width: '100vw', height: '100vh', background: '#EDD7B3', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <div className="text-black text-xl">Loading recipe...</div>
       </div>
     );
@@ -108,16 +148,7 @@ const RecipeDetail = () => {
 
   if (error) {
     return (
-      <div
-        style={{
-          width: '100vw',
-          height: '100vh',
-          background: '#EDD7B3',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-      >
+      <div style={{ width: '100vw', height: '100vh', background: '#EDD7B3', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <div className="text-red-600 text-xl">Error: {error}</div>
       </div>
     );
@@ -125,16 +156,7 @@ const RecipeDetail = () => {
 
   if (!recipe) {
     return (
-      <div
-        style={{
-          width: '100vw',
-          height: '100vh',
-          background: '#EDD7B3',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-      >
+      <div style={{ width: '100vw', height: '100vh', background: '#EDD7B3', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <div className="text-black text-xl">Recipe not found</div>
       </div>
     );
@@ -143,6 +165,7 @@ const RecipeDetail = () => {
   const totalPages = Math.max(1, Math.ceil((recipe.steps?.length || 0) / stepsPerPage));
   const start = stepPage * stepsPerPage;
   const visibleSteps = (recipe.steps || []).slice(start, start + stepsPerPage);
+  const onLastPage = stepPage === totalPages - 1;
 
   return (
     <div
@@ -158,7 +181,10 @@ const RecipeDetail = () => {
         alignItems: "center",
         position: "relative",
         overflow: "hidden",
-        borderRadius: 40,
+        borderTopLeftRadius: 40,
+        borderTopRightRadius: 40,
+        borderBottomLeftRadius: 0,
+        borderBottomRightRadius: 0,
         boxShadow: "0 2px 20px #0001",
       }}
     >
@@ -182,7 +208,10 @@ const RecipeDetail = () => {
       <div
         style={{
           background: "#EDD7B3",
-          borderRadius: 40,
+          borderTopLeftRadius: 40,
+          borderTopRightRadius: 40,
+          borderBottomLeftRadius: 0,
+          borderBottomRightRadius: 0,
           boxShadow: "0 2px 20px #0001",
           width: "100%",
           marginTop: -25,
@@ -349,7 +378,7 @@ const RecipeDetail = () => {
               }}
             >
               <ul style={{ listStyle: 'disc', paddingLeft: 24 }}>
-                {recipe.ingredients.map((item, i) => (
+                {scaledIngredients.map((item, i) => (
                   <li key={i}>{item}</li>
                 ))}
               </ul>
@@ -363,7 +392,7 @@ const RecipeDetail = () => {
             // INSTRUCTIONS with paging (3 per page)
             <div style={{ position: 'relative', marginBottom: 16 }}>
               {/* Steps */}
-              <div style={{ fontSize: 18 }}>
+              <div style={{ fontSize: 18, paddingLeft: ARROW_PAD, paddingRight: ARROW_PAD }}>
                 {visibleSteps.length === 0 ? (
                   <div>No steps yet.</div>
                 ) : (
@@ -386,11 +415,11 @@ const RecipeDetail = () => {
                     aria-label="Previous steps"
                     style={{
                       position: 'absolute',
-                      left: -6,
+                      left: -ARROW_OFFSET,
                       top: '50%',
                       transform: 'translateY(-50%)',
-                      width: 32,
-                      height: 32,
+                      width: ARROW_SIZE,
+                      height: ARROW_SIZE,
                       cursor: stepPage === 0 ? 'default' : 'pointer',
                       display: 'grid',
                       placeItems: 'center',
@@ -402,8 +431,8 @@ const RecipeDetail = () => {
                       aria-hidden="true"
                       draggable={false}
                       style={{
-                        width: 32,
-                        height: 32,
+                        width: ARROW_SIZE,
+                        height: ARROW_SIZE,
                         display: 'block',
                         pointerEvents: 'none',
                         filter: stepPage === 0 ? 'grayscale(1) opacity(0.5)' : 'none',
@@ -419,11 +448,11 @@ const RecipeDetail = () => {
                     aria-label="Next steps"
                     style={{
                       position: 'absolute',
-                      right: -6,
+                      right: -ARROW_OFFSET,
                       top: '50%',
                       transform: 'translateY(-50%)',
-                      width: 32,
-                      height: 32,
+                      width: ARROW_SIZE,
+                      height: ARROW_SIZE,
                       cursor: stepPage >= totalPages - 1 ? 'default' : 'pointer',
                       display: 'grid',
                       placeItems: 'center',
@@ -435,8 +464,8 @@ const RecipeDetail = () => {
                       aria-hidden="true"
                       draggable={false}
                       style={{
-                        width: 32,
-                        height: 32,
+                        width: ARROW_SIZE,
+                        height: ARROW_SIZE,
                         display: 'block',
                         pointerEvents: 'none',
                         filter: stepPage >= totalPages - 1 ? 'grayscale(1) opacity(0.5)' : 'none',
@@ -448,6 +477,29 @@ const RecipeDetail = () => {
                     {stepPage + 1} / {totalPages}
                   </div>
                 </>
+              )}
+
+              {/* ✅ Complete button (only on last page) */}
+              {onLastPage && (recipe.steps?.length ?? 0) > 0 && (
+                <div style={{ display: 'flex', justifyContent: 'center', marginTop: 12 }}>
+                  <button
+                    type="button"
+                    onClick={() => navigate('/reward')}
+                    style={{
+                      background: '#4FB9AF',
+                      color: '#fff',
+                      fontWeight: 800,
+                      fontSize: 14,
+                      border: 'none',
+                      borderRadius: 999,
+                      padding: '8px 16px',
+                      boxShadow: '0 4px 10px rgba(0,0,0,0.15)',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    Complete!
+                  </button>
+                </div>
               )}
             </div>
           )}

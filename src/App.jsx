@@ -4,6 +4,7 @@ import HomeScreen from "./components/HomeScreen";
 import BreakfastRoute from "./components/BreakfastRoute";
 import AddRecipe from "./components/AddRecipe";
 import RecipeDetail from "./components/RecipeDetail";
+import RewardScreen from "./components/RewardScreen";
 import BottomNav from "./components/BottomNav";
 
 export default function App() {
@@ -29,6 +30,7 @@ export default function App() {
               <Route path="/" element={<HomeScreen />} />
               <Route path="/breakfast" element={<BreakfastRoute isAdmin={admin} />} />
               <Route path="/recipe/:id" element={<RecipeDetail />} />
+              <Route path="/reward" element={<RewardScreen />} />
             </>
           )}
         </Routes>

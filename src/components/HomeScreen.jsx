@@ -12,6 +12,19 @@ export default function HomeScreen() {
   const [scale, setScale] = useState(1);
   const [scaledHeight, setScaledHeight] = useState(BASE_H);
 
+  // 👇 modal state
+  const [modalOpen, setModalOpen] = useState(false);
+  const openModal = () => setModalOpen(true);
+  const closeModal = () => setModalOpen(false);
+
+  // Close on Esc
+  useEffect(() => {
+    if (!modalOpen) return;
+    const onKey = (e) => e.key === "Escape" && closeModal();
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [modalOpen]);
+
   useEffect(() => {
     const updateScale = () => {
       if (!containerRef.current) return;
@@ -28,14 +41,15 @@ export default function HomeScreen() {
   }, []);
 
   const handleBreakfastClick = () => navigate("/breakfast");
-  const handlePlaceholderClick = (q) => console.log(`${q} clicked - placeholder handler`);
+  // 👇 for unimplemented sections, show the modal
+  const handlePlaceholderClick = () => openModal();
 
   return (
     <div
       ref={containerRef}
       className="w-full mx-auto bg-[#F6DFBC] min-h-screen relative overflow-hidden max-w-[480px]"
     >
-      {/* Layout spacer: this makes the page reserve the scaled height so BottomNav doesn't overlap */}
+      {/* Layout spacer: reserve the scaled height so BottomNav doesn't overlap */}
       <div style={{ height: scaledHeight }} />
 
       {/* Scaled design canvas */}
@@ -48,8 +62,6 @@ export default function HomeScreen() {
           transformOrigin: "top center",
         }}
       >
-        {/* --- Your existing absolute-positioned content below --- */}
-
         {/* Welcome Text */}
         <div className="absolute left-[14px] top-[65px]">
           <span className="text-black font-nunito text-[28px] font-normal leading-[36px]">
@@ -58,7 +70,7 @@ export default function HomeScreen() {
         </div>
 
         {/* Let's cook! Text */}
-        <div className="absolute left-[14px] top-[109px]">
+        <div className="absolute left-[14px] top:[109px] top-[109px]">
           <span className="text-black font-nunito text-[35px] font-bold leading-[36px]">
             Let's cook!
           </span>
@@ -91,7 +103,7 @@ export default function HomeScreen() {
         {/* Lunch Quests */}
         <div className="absolute left-[202px] top-[180px] w-[152px] h-[188px]">
           <button
-            onClick={() => handlePlaceholderClick("Lunch")}
+            onClick={handlePlaceholderClick}
             className="w-full h-full rounded-[20px] bg-[#F89921] shadow-[4px_4px_4px_0_rgba(0,0,0,0.25)] flex flex-col items-center justify-center cursor-pointer hover:scale-105 active:scale-95 transition-transform duration-200"
           >
             <img
@@ -108,7 +120,7 @@ export default function HomeScreen() {
         {/* Dinner Quests */}
         <div className="absolute left-[18px] top-[420px] w-[152px] h-[192px]">
           <button
-            onClick={() => handlePlaceholderClick("Dinner")}
+            onClick={handlePlaceholderClick}
             className="w-full h-full rounded-[20px] bg-[#4FB9B0] shadow-[4px_4px_4px_0_rgba(0,0,0,0.25)] flex flex-col items-center justify-center cursor-pointer hover:scale-105 active:scale-95 transition-transform duration-200"
           >
             <img
@@ -125,7 +137,7 @@ export default function HomeScreen() {
         {/* Dessert Quests */}
         <div className="absolute left-[202px] top-[420px] w-[152px] h-[192px]">
           <button
-            onClick={() => handlePlaceholderClick("Dessert")}
+            onClick={handlePlaceholderClick}
             className="w-full h-full rounded-[20px] bg-[#FFCB63] shadow-[4px_4px_4px_0_rgba(0,0,0,0.25)] flex flex-col items-center justify-center cursor-pointer hover:scale-105 active:scale-95 transition-transform duration-200"
           >
             <img
@@ -142,26 +154,66 @@ export default function HomeScreen() {
         {/* Special Quests */}
         <div className="absolute left-[56px] top-[632px] w-[256px] h-[110px]">
           <button
-            onClick={() => handlePlaceholderClick("Special")}
-            className="w-full h-full rounded-[20px] bg-[#F89921] shadow-[4px_4px_4px_0_rgba(0,0,0,0.25)] flex flex-row items-center justify-center cursor-pointer hover:scale-105 active:scale-95 transition-transform duration-200"
+            onClick={handlePlaceholderClick}
+            className="w-full h-full rounded-[20px] bg-[#F89921] shadow-[4px_4px_4px_0_rgba(0,0,0,0.25)]
+                      flex flex-col items-center justify-center cursor-pointer
+                      hover:scale-105 active:scale-95 transition-transform duration-200"
           >
-            <img
-              src="/assets/homepage/chef-icon.png"
-              alt="Chef icon"
-              className="w-[88px] h-[88px] object-contain mr-4"
-            />
-            <img
-              src="/assets/homepage/castle-icon.png"
-              alt="Castle icon"
-              className="w-[83px] h-[81px] object-contain mr-4"
-            />
-            <div className="text-black text-center font-nunito text-[20px] font-bold leading-[21px]">
-              Special<br />Quests
+            {/* icons row */}
+            <div className="flex items-end justify-center gap-2 -mb-1">
+              <img
+                src="/assets/homepage/chef-icon.png"
+                alt="Chef icon"
+                className="w-[60px] h-[60px] object-contain"
+              />
+              <img
+                src="/assets/homepage/castle-icon.png"
+                alt="Castle icon"
+                className="w-[58px] h-[58px] object-contain"
+              />
+            </div>
+
+            {/* label under icons */}
+            <div className="text-black text-center font-nunito text-[20px] font-bold leading-[21px] mt-[4px]">
+              Special Quests
             </div>
           </button>
         </div>
-
       </div>
+
+      {/* 🔶 Modal */}
+      {modalOpen && (
+        <div
+          className="fixed inset-0 z-[9999] flex items-center justify-center"
+          style={{ background: "rgba(0,0,0,0.35)" }}
+          onClick={closeModal}
+          role="dialog"
+          aria-modal="true"
+        >
+          <div
+            className="bg-white rounded-2xl shadow-xl px-6 py-5 w-[280px] text-center relative"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              onClick={closeModal}
+              aria-label="Close"
+              className="absolute right-3 top-2 text-2xl leading-none text-black/60 hover:text-black"
+            >
+              &times;
+            </button>
+            <div className="text-[18px] font-extrabold mb-2">Still baking</div>
+            <div className="text-[16px] mb-4 text-black/70">…almost done!</div>
+            <button
+              type="button"
+              onClick={closeModal}
+              className="px-4 py-2 rounded-lg bg-[#F89921] font-bold"
+            >
+              OK
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
